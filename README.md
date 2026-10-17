@@ -1,6 +1,6 @@
 # ⛏️ Manic Miner (1983) — ZX Spectrum 48K HTML5 Edition
 
-A faithful, standalone, zero-dependency browser recreation of **Matthew Smith's 1983 platforming masterpiece *Manic Miner*** (originally published by Bug-Byte Software Ltd.), powered by the [SkoolKit Manic Miner Disassembly](https://skoolkit.ca/disassemblies/manic_miner/).
+A faithful, standalone, zero-dependency browser recreation of **Matthew Smith's 1983 platforming masterpiece *Manic Miner*** (originally published by Bug-Byte Software Ltd.). The game engine and original 48K RAM snapshot are 100% self-contained in memory and execute entirely offline in the browser with zero external network or asset dependencies.
 
 Runs directly in any modern desktop or mobile browser — no plugins, build steps, or external assets required.
 
@@ -111,7 +111,7 @@ Runs directly in any modern desktop or mobile browser — no plugins, build step
 ## 📜 Credits & Disclaimer
 
 - **Original Game**: Created by **Matthew Smith** and originally released in 1983 by **Bug-Byte Software Ltd.** and subsequently **Software Projects**.
-- **Technical Reference**: Powered by Richard Dymond's remarkable [SkoolKit Manic Miner Disassembly](https://skoolkit.ca/disassemblies/manic_miner/).
+- **Technical Disassembly Reference**: Richard Dymond's seminal SkoolKit Manic Miner disassembly analysis.
 - **ZX Spectrum ROM Font**: Amstrad / Sinclair Research Ltd.
 
 ### Non-Commercial Educational / Fan Preservation Notice

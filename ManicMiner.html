@@ -566,8 +566,7 @@
   <div class="title-block">
     <h1>⛏️ MANIC MINER <span style="font-size:0.8rem;color:var(--muted);font-weight:500;">(1983 Bug-Byte Software .z80)</span></h1>
     <div class="subtitle">
-      Authentic ZX Spectrum 48K RAM &amp; Beeper Engine powered by
-      <a href="https://skoolkit.ca/disassemblies/manic_miner/" target="_blank" rel="noopener">SkoolKit Manic Miner Disassembly</a>
+      Authentic ZX Spectrum 48K RAM &amp; Beeper Engine &bull; Standalone &amp; Zero-Dependency
     </div>
   </div>
   <div class="top-actions">
@@ -656,7 +655,7 @@
 
     <div class="card">
       <h2>
-        <span>🗺️ 20 Caverns Teleport (<a href="https://skoolkit.ca/disassemblies/manic_miner/maps/data.html" target="_blank" style="color:var(--accent);">45056–65535</a>)</span>
+        <span>🗺️ 20 Caverns Teleport <span style="font-size:0.8rem;color:var(--muted);">(45056–65535)</span></span>
         <span style="font-size:0.75rem;color:var(--muted);font-weight:normal;">Click any cavern to warp</span>
       </h2>
       <div id="cavernGrid" class="cavern-grid"></div>
@@ -676,22 +675,22 @@
 
     <div class="card">
       <h2>
-        <span>🔍 SkoolKit RAM Status Buffer (<a href="https://skoolkit.ca/disassemblies/manic_miner/maps/all.html" target="_blank" style="color:var(--accent);">32768–33885</a>)</span>
+        <span>🔍 ZX Spectrum RAM Status Buffer <span style="font-size:0.8rem;color:var(--muted);">(32768–33885)</span></span>
       </h2>
       <table class="inspector-table">
         <thead>
           <tr><th>Addr</th><th>Symbol / Description</th><th>Value</th></tr>
         </thead>
         <tbody id="inspectorBody">
-          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/33799.html" target="_blank">33799</a></td><td>Current cavern number</td><td id="ins33799" class="val-cell">0</td></tr>
-          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32876.html" target="_blank">32876</a></td><td>Willy attr addr (row, col)</td><td id="ins32876" class="val-cell">23970</td></tr>
-          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32872.html" target="_blank">32872</a></td><td>Willy Y-coord * 2 (px)</td><td id="ins32872" class="val-cell">208</td></tr>
-          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32873.html" target="_blank">32873</a></td><td>Willy anim frame (0–3)</td><td id="ins32873" class="val-cell">0</td></tr>
-          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32874.html" target="_blank">32874</a></td><td>Direction &amp; movement flags</td><td id="ins32874" class="val-cell">0</td></tr>
-          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32875.html" target="_blank">32875</a></td><td>Airborne status (0/1/2–12+)</td><td id="ins32875" class="val-cell">0</td></tr>
-          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32878.html" target="_blank">32878</a></td><td>Jump counter (0–18)</td><td id="ins32878" class="val-cell">0</td></tr>
-          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32956.html" target="_blank">32956</a></td><td>Remaining air / Clock (32957)</td><td id="ins32956" class="val-cell">63 / 252</td></tr>
-          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/33885.html" target="_blank">33885</a></td><td>6031769 cheat counter (0–7)</td><td id="ins33885" class="val-cell">0</td></tr>
+          <tr><td>33799</td><td>Current cavern number</td><td id="ins33799" class="val-cell">0</td></tr>
+          <tr><td>32876</td><td>Willy attr addr (row, col)</td><td id="ins32876" class="val-cell">23970</td></tr>
+          <tr><td>32872</td><td>Willy Y-coord * 2 (px)</td><td id="ins32872" class="val-cell">208</td></tr>
+          <tr><td>32873</td><td>Willy anim frame (0–3)</td><td id="ins32873" class="val-cell">0</td></tr>
+          <tr><td>32874</td><td>Direction &amp; movement flags</td><td id="ins32874" class="val-cell">0</td></tr>
+          <tr><td>32875</td><td>Airborne status (0/1/2–12+)</td><td id="ins32875" class="val-cell">0</td></tr>
+          <tr><td>32878</td><td>Jump counter (0–18)</td><td id="ins32878" class="val-cell">0</td></tr>
+          <tr><td>32956</td><td>Remaining air / Clock (32957)</td><td id="ins32956" class="val-cell">63 / 252</td></tr>
+          <tr><td>33885</td><td>6031769 cheat counter (0–7)</td><td id="ins33885" class="val-cell">0</td></tr>
         </tbody>
       </table>
     </div>
@@ -1011,7 +1010,7 @@ function readPort0to6() {
 }
 
 // ============================================================================
-// SKOOLKIT DISASSEMBLY ROUTINES (33792..37699)
+// AUTHENTIC Z80 ASSEMBLY ROUTINES (33792..37699)
 // ============================================================================
 
 let gameState = 'TITLE_TUNE'; // TITLE_TUNE, TITLE_SCROLL, PLAYING, DYING, BOOT_DESCEND, GAME_OVER_GLISTEN, CAVERN_FLASH, CAVERN_AIR_BONUS, VICTORY_ANIM
