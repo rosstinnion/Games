@@ -1,2 +1,4 @@
 *.z80
 *.bak
+*-local.html
+*standalone*

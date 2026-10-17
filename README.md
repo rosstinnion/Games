@@ -1,22 +1,22 @@
 # ⛏️ Manic Miner (1983) — ZX Spectrum 48K HTML5 Edition
 
-A faithful, standalone, zero-dependency browser recreation of **Matthew Smith's 1983 platforming masterpiece *Manic Miner*** (originally published by Bug-Byte Software Ltd.). The game engine and original 48K RAM snapshot are 100% self-contained in memory and execute entirely offline in the browser with zero external network or asset dependencies.
+A faithful, standalone, 100% clean browser recreation of **Matthew Smith's 1983 platforming masterpiece *Manic Miner*** (originally published by Bug-Byte Software Ltd.). Built as an open-source ZX Spectrum 48K engine that loads your legally owned `.z80` snapshot with zero proprietary ROM binaries bundled in the repository.
 
-Runs directly in any modern desktop or mobile browser — no plugins, build steps, or external assets required.
+Runs directly in any modern desktop or mobile browser — no plugins, build steps, or external servers required.
 
 ---
 
 ## 🎮 Play Online / Local
 
-- **Direct Play**: Double-click [`index.html`](file:///c:/Users/ross/Documents/Projects/manic/index.html) or [`ManicMiner.html`](file:///c:/Users/ross/Documents/Projects/manic/ManicMiner.html) in your browser.
-- **GitHub Pages**: Automatically playable when deployed from the `main` branch (at `https://rosstinnion.github.io/Games/` or `https://rosstinnion.github.io/Games/ManicMiner.html`).
+- **Public Web / GitHub Pages**: Load [`index.html`](file:///c:/Users/ross/Documents/Projects/manic/index.html) or [`ManicMiner.html`](file:///c:/Users/ross/Documents/Projects/manic/ManicMiner.html) and drop your `Manic Miner .z80` file onto the screen. It is cached locally in your browser storage so you only ever select it once.
+- **Personal Local Play (`ManicMiner-local.html`)**: For private offline play without file selection prompts, a pre-bundled all-in-one local build is maintained locally and excluded from git tracking.
 
 ---
 
 ## ✨ Features
 
 ### 🕹️ Authentic 1983 ZX Spectrum Engine
-- **Self-Contained 48K RAM**: The entire original `.z80` snapshot (49,152 bytes) is embedded directly into the code and initialized in memory on boot.
+- **100% Clean BYO-ROM Architecture**: Zero copyrighted game binaries are distributed. The browser saves your snapshot in `localStorage` for instant, seamless play on every visit.
 - **1-Bit Web Audio Beeper Synthesizer**: Cycle-accurate pitch emulation for *In the Hall of the Mountain King* (in-game music) and *The Blue Danube* (title piano sequence).
 - **50Hz ULA Display & CRT Shader**: Authentic 256×192 pixel display with 32×24 attribute color cells, border emulation, flashing attributes, and toggleable CRT scanlines.
 
