@@ -8,8 +8,8 @@ Runs directly in any modern desktop or mobile browser — no plugins, build step
 
 ## 🎮 Play Online / Local
 
-- **Direct Play**: Double-click [`index.html`](file:///c:/Users/ross/Documents/Projects/manic/index.html) in your browser.
-- **GitHub Pages**: Automatically playable when deployed from the `main` branch.
+- **Direct Play**: Double-click [`index.html`](file:///c:/Users/ross/Documents/Projects/manic/index.html) or [`ManicMiner.html`](file:///c:/Users/ross/Documents/Projects/manic/ManicMiner.html) in your browser.
+- **GitHub Pages**: Automatically playable when deployed from the `main` branch (at `https://rosstinnion.github.io/Games/` or `https://rosstinnion.github.io/Games/ManicMiner.html`).
 
 ---
 
