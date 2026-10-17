@@ -1,0 +1,3289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manic Miner (1983) (Bug-Byte Software) — ZX Spectrum 48K HTML5 Edition</title>
+<style>
+  :root {
+    --bg: #0d0f17;
+    --panel: #161926;
+    --panel-border: #2a3048;
+    --accent: #ffcc00;
+    --accent-cyan: #00e5ff;
+    --accent-red: #ff3366;
+    --accent-green: #00e676;
+    --text: #e8ecf4;
+    --muted: #949eb8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 16px;
+    background: radial-gradient(circle at top, #1a1f35 0%, #090b10 100%);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  header {
+    width: 100%;
+    max-width: 1220px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 12px 18px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  }
+  .title-block h1 {
+    margin: 0;
+    font-size: 1.35rem;
+    letter-spacing: 0.5px;
+    color: var(--accent);
+    text-shadow: 0 0 12px rgba(255, 204, 0, 0.35);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .title-block .subtitle {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .title-block .subtitle a {
+    color: var(--accent-cyan);
+    text-decoration: none;
+  }
+  .title-block .subtitle a:hover {
+    text-decoration: underline;
+  }
+  .top-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  button, select, .file-label {
+    background: #22273b;
+    color: var(--text);
+    border: 1px solid #394160;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  button:hover, select:hover, .file-label:hover {
+    background: #2d344e;
+    border-color: var(--accent-cyan);
+  }
+  button.primary {
+    background: linear-gradient(135deg, #ffcc00, #ff9900);
+    color: #111;
+    border-color: #ffdd44;
+  }
+  button.primary:hover {
+    filter: brightness(1.1);
+  }
+  button.active-toggle {
+    background: rgba(0, 230, 118, 0.18);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+  }
+  .workspace {
+    width: 100%;
+    max-width: 1220px;
+    display: grid;
+    grid-template-columns: minmax(320px, 700px) 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 960px) {
+    .workspace {
+      grid-template-columns: 1fr;
+    }
+  }
+  .screen-card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.55);
+  }
+  .canvas-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 0 2px #000, 0 10px 30px rgba(0,0,0,0.8);
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .screen-stage {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 4 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+  /* Strict 4:3 Aspect Ratio Fullscreen with pillarbox/letterbox bars */
+  #canvasWrap:fullscreen,
+  #canvasWrap:-webkit-full-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: #000 !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  #canvasWrap:fullscreen .screen-stage,
+  #canvasWrap:-webkit-full-screen .screen-stage {
+    width: min(100vw, calc(100vh * (4 / 3))) !important;
+    height: min(100vh, calc(100vw * (3 / 4))) !important;
+    aspect-ratio: 4 / 3 !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    position: relative !important;
+    margin: auto !important;
+  }
+  .fs-exit-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(22, 25, 38, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 20;
+    display: none;
+    transition: opacity 0.25s ease, background 0.15s ease;
+  }
+  #canvasWrap:fullscreen .fs-exit-btn,
+  #canvasWrap:-webkit-full-screen .fs-exit-btn {
+    display: flex;
+    opacity: 0.45;
+  }
+  #canvasWrap:fullscreen:hover .fs-exit-btn,
+  #canvasWrap:-webkit-full-screen:hover .fs-exit-btn {
+    opacity: 1;
+  }
+  .fs-exit-btn:hover {
+    background: rgba(255, 51, 102, 0.9);
+    border-color: #ff3366;
+    opacity: 1 !important;
+  }
+  .screen-toast {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    background: rgba(16, 20, 32, 0.94);
+    border: 1px solid var(--accent-cyan);
+    color: var(--text);
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    z-index: 30;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.75);
+    white-space: nowrap;
+  }
+  .screen-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  /* Save States Manager Styling */
+  .save-states-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .save-slot-item {
+    background: #181c2c;
+    border: 1px solid #2b334d;
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+  }
+  .save-slot-item:hover {
+    background: #1f253b;
+    border-color: #3e4a6d;
+  }
+  .save-slot-item.active-slot {
+    border-color: var(--accent);
+    background: rgba(255, 204, 0, 0.08);
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.15);
+  }
+  .save-slot-thumb {
+    width: 68px;
+    height: 51px;
+    border-radius: 4px;
+    background: #000;
+    border: 1px solid #333d59;
+    object-fit: cover;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    flex-shrink: 0;
+  }
+  .save-slot-thumb.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--muted);
+    font-size: 0.68rem;
+    border-style: dashed;
+    border-color: #333d59;
+    background: #10131d;
+  }
+  .save-slot-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .save-slot-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .save-slot-cavern {
+    font-size: 0.74rem;
+    color: var(--accent-cyan);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .save-slot-stats {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: 'Consolas', monospace;
+  }
+  .save-slot-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .save-slot-btn {
+    padding: 4px 7px;
+    font-size: 0.72rem;
+    border-radius: 4px;
+  }
+  .crt-overlay {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.28) 50%),
+      radial-gradient(circle at center, transparent 65%, rgba(0, 0, 0, 0.45) 100%);
+    background-size: 100% 4px, 100% 100%;
+    display: none;
+  }
+  .crt-enabled .crt-overlay {
+    display: block;
+  }
+  .status-bar {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: #10131d;
+    border: 1px solid #23283c;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-family: 'Consolas', 'Courier New', monospace;
+  }
+  .badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    background: #23283c;
+    color: var(--accent-cyan);
+  }
+  .touch-controls {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    user-select: none;
+  }
+  .touch-group {
+    display: flex;
+    gap: 8px;
+  }
+  .touch-btn {
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 8px;
+    background: #1e2436;
+    border: 1px solid #3a4466;
+    color: var(--text);
+    touch-action: manipulation;
+  }
+  .touch-btn:active {
+    background: var(--accent);
+    color: #000;
+  }
+  .rewind-bar {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #181c2c, #121521);
+    border: 1px solid #2e3654;
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .rewind-btn {
+    background: linear-gradient(135deg, #00b4d8, #0077b6);
+    color: #fff;
+    border-color: #48cae4;
+    font-weight: 700;
+    user-select: none;
+  }
+  .rewind-btn:hover {
+    background: linear-gradient(135deg, #48cae4, #0096c7);
+    border-color: #90e0ef;
+  }
+  .rewind-btn.rewinding {
+    background: var(--accent);
+    color: #000;
+    border-color: #fff;
+    box-shadow: 0 0 12px rgba(255, 204, 0, 0.7);
+  }
+  .rewind-slider-wrap {
+    flex: 1;
+    min-width: 140px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  #rewindSlider {
+    flex: 1;
+    accent-color: var(--accent-cyan);
+    cursor: pointer;
+  }
+  .death-banner {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 14px;
+    background: rgba(20, 10, 24, 0.92);
+    border: 2px solid var(--accent-red);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    box-shadow: 0 8px 28px rgba(255, 51, 102, 0.45);
+    z-index: 5;
+  }
+  .death-banner.visible {
+    display: flex;
+  }
+  .death-banner .death-title {
+    color: #ff4d79;
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+  }
+  .death-banner .death-sub {
+    color: var(--text);
+    font-size: 0.8rem;
+  }
+  .side-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  }
+  .card h2 {
+    margin: 0 0 10px 0;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--accent-cyan);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cavern-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .cavern-btn {
+    justify-content: space-between;
+    text-align: left;
+    padding: 6px 9px;
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+  .cavern-btn.current {
+    background: rgba(255, 204, 0, 0.18);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .cavern-btn .tele {
+    font-family: monospace;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .cheats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .inspector-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.78rem;
+  }
+  .inspector-table th, .inspector-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #22273a;
+    text-align: left;
+  }
+  .inspector-table th {
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .inspector-table a {
+    color: var(--accent-cyan);
+    text-decoration: none;
+  }
+  .inspector-table a:hover {
+    text-decoration: underline;
+  }
+  .val-cell {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .keys-list {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 5px 12px;
+    font-size: 0.81rem;
+    margin: 0;
+  }
+  .keys-list dt {
+    font-family: monospace;
+    background: #22273b;
+    padding: 1px 6px;
+    border-radius: 4px;
+    border: 1px solid #343c59;
+    color: var(--accent);
+    align-self: center;
+  }
+  .keys-list dd {
+    margin: 0;
+    color: var(--muted);
+    align-self: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-block">
+    <h1>⛏️ MANIC MINER <span style="font-size:0.8rem;color:var(--muted);font-weight:500;">(1983 Bug-Byte Software .z80)</span></h1>
+    <div class="subtitle">
+      Authentic ZX Spectrum 48K RAM &amp; Beeper Engine powered by
+      <a href="https://skoolkit.ca/disassemblies/manic_miner/" target="_blank" rel="noopener">SkoolKit Manic Miner Disassembly</a>
+    </div>
+  </div>
+  <div class="top-actions">
+    <button id="btnStart" class="primary" title="Press ENTER to start game">▶ Start Game (Enter)</button>
+    <button id="btnTitle" title="Return to Title Screen (Shift+Space)">🎹 Title Screen</button>
+    <button id="btnPause" title="Pause / Resume Game (A-G)">⏸ Pause</button>
+    <button id="btnQuickSave" title="Quick Save state to active slot (F5)">💾 Save (F5)</button>
+    <button id="btnQuickLoad" title="Quick Load state from active slot (F9)">📂 Load (F9)</button>
+    <button id="btnMusic" class="active-toggle" title="Toggle Audio / Beeper Music (H-L)">🔊 Audio: ON</button>
+    <button id="btnCRT" class="active-toggle" title="Toggle CRT Scanlines">📺 CRT</button>
+    <button id="btnFullscreen" title="Toggle Fullscreen 4:3 Display">⛶ Fullscreen</button>
+    <select id="selSpeed" title="Game Loop Speed">
+      <option value="0.75">Speed: 75%</option>
+      <option value="1" selected>Speed: 100% (Authentic)</option>
+      <option value="1.25">Speed: 125%</option>
+      <option value="1.5">Speed: 150%</option>
+    </select>
+    <label class="file-label" title="Load custom Manic Miner .z80 snapshot">
+      📂 Load .z80
+      <input type="file" id="fileZ80" accept=".z80" style="display:none" />
+    </label>
+  </div>
+</header>
+
+<div class="workspace">
+  <div class="screen-card">
+    <div id="canvasWrap" class="canvas-wrap crt-enabled">
+      <div id="screenStage" class="screen-stage">
+        <canvas id="specCanvas" width="320" height="240"></canvas>
+        <div class="crt-overlay"></div>
+        <div id="deathBanner" class="death-banner">
+          <div class="death-title">💀 FATAL HIT CAUGHT!</div>
+          <div class="death-sub">Hold <b>Left (← / Q)</b>, <b>Backspace</b> or <b>⏪ Rewind</b> to rewind time, or press <b>Enter</b> to lose a life.</div>
+        </div>
+        <div id="screenToast" class="screen-toast"></div>
+        <button id="btnExitFs" class="fs-exit-btn" title="Exit Fullscreen (Esc)">🗗 Exit Fullscreen</button>
+      </div>
+    </div>
+
+    <div class="rewind-bar">
+      <button id="btnRewindHold" class="rewind-btn" title="Hold Backspace or this button to rewind time">⏪ Hold to Rewind (Backspace)</button>
+      <button id="btnRewind2s" title="Instant jump back 2 seconds (Delete / [)">⏮ -2s</button>
+      <div class="rewind-slider-wrap">
+        <input type="range" id="rewindSlider" min="0" max="0" value="0" title="Scrub through recorded gameplay frames" />
+        <span id="lblRewindTime">0.0s</span>
+      </div>
+      <button id="btnAutoCatch" class="active-toggle" title="Automatically freeze on fatal hit so you can rewind instead of dying">🛟 Death-Save: ON</button>
+    </div>
+
+    <div class="status-bar">
+      <div>MODE: <span id="lblMode" class="badge">TITLE</span></div>
+      <div>CAVERN: <span id="lblCavern" class="badge">0: Central Cavern</span></div>
+      <div>SCORE: <span id="lblScore" class="badge">000000</span></div>
+      <div>HIGH: <span id="lblHigh" class="badge">000000</span></div>
+      <div>LIVES: <span id="lblLives" class="badge">2</span></div>
+    </div>
+
+    <div class="touch-controls">
+      <div class="touch-group">
+        <button class="touch-btn" id="touchLeft">◀ LEFT</button>
+        <button class="touch-btn" id="touchRight">RIGHT ▶</button>
+      </div>
+      <div class="touch-group">
+        <button class="touch-btn" id="touchRewind" style="background:#102a3a;border-color:#00e5ff;color:#00e5ff;">⏪ REW</button>
+        <button class="touch-btn" id="touchEnter">ENTER</button>
+        <button class="touch-btn" id="touchJump" style="background:#3a2e14;border-color:#ffcc00;color:#ffcc00;">▲ JUMP</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <div class="card" id="cardSaveStates">
+      <h2>
+        <span>💾 Save States (<span id="lblActiveSlotBadge" style="color:var(--accent);">Slot 1</span>)</span>
+        <span style="font-size:0.75rem;color:var(--muted);font-weight:normal;">F5: Save | F9: Load</span>
+      </h2>
+      <div class="save-states-list" id="saveStatesList"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;justify-content:space-between;">
+        <button id="btnExportStates" style="flex:1;font-size:0.75rem;">⬇️ Export Saves</button>
+        <label class="file-label" style="flex:1;font-size:0.75rem;justify-content:center;">
+          ⬆️ Import Saves
+          <input type="file" id="fileImportStates" accept=".json" style="display:none;" />
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span>🗺️ 20 Caverns Teleport (<a href="https://skoolkit.ca/disassemblies/manic_miner/maps/data.html" target="_blank" style="color:var(--accent);">45056–65535</a>)</span>
+        <span style="font-size:0.75rem;color:var(--muted);font-weight:normal;">Click any cavern to warp</span>
+      </h2>
+      <div id="cavernGrid" class="cavern-grid"></div>
+    </div>
+
+    <div class="card">
+      <h2>🛠️ Cheats &amp; Trainers</h2>
+      <div class="cheats-grid">
+        <button id="btnCheat6031769" title="Activates original 6031769 boot cheat at address 33885">🥾 6031769 Cheat: OFF</button>
+        <button id="btnInfLives" title="Lock spare lives at 33879">❤️ Infinite Lives: OFF</button>
+        <button id="btnInfAir" title="Lock air supply at 32956">🫧 Infinite Air: OFF</button>
+        <button id="btnInvincible" title="Ignore guardian, nasty &amp; fall deaths">🛡️ Invincible: OFF</button>
+        <button id="btnCollectItems" title="Collect all remaining items in current cavern &amp; open portal">🔑 Collect All Items</button>
+        <button id="btnNextCavern" title="Trigger routine 36904 (Move to next cavern)">🚪 Complete Cavern</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span>🔍 SkoolKit RAM Status Buffer (<a href="https://skoolkit.ca/disassemblies/manic_miner/maps/all.html" target="_blank" style="color:var(--accent);">32768–33885</a>)</span>
+      </h2>
+      <table class="inspector-table">
+        <thead>
+          <tr><th>Addr</th><th>Symbol / Description</th><th>Value</th></tr>
+        </thead>
+        <tbody id="inspectorBody">
+          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/33799.html" target="_blank">33799</a></td><td>Current cavern number</td><td id="ins33799" class="val-cell">0</td></tr>
+          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32876.html" target="_blank">32876</a></td><td>Willy attr addr (row, col)</td><td id="ins32876" class="val-cell">23970</td></tr>
+          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32872.html" target="_blank">32872</a></td><td>Willy Y-coord * 2 (px)</td><td id="ins32872" class="val-cell">208</td></tr>
+          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32873.html" target="_blank">32873</a></td><td>Willy anim frame (0–3)</td><td id="ins32873" class="val-cell">0</td></tr>
+          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32874.html" target="_blank">32874</a></td><td>Direction &amp; movement flags</td><td id="ins32874" class="val-cell">0</td></tr>
+          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32875.html" target="_blank">32875</a></td><td>Airborne status (0/1/2–12+)</td><td id="ins32875" class="val-cell">0</td></tr>
+          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32878.html" target="_blank">32878</a></td><td>Jump counter (0–18)</td><td id="ins32878" class="val-cell">0</td></tr>
+          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/32956.html" target="_blank">32956</a></td><td>Remaining air / Clock (32957)</td><td id="ins32956" class="val-cell">63 / 252</td></tr>
+          <tr><td><a href="https://skoolkit.ca/disassemblies/manic_miner/asm/33885.html" target="_blank">33885</a></td><td>6031769 cheat counter (0–7)</td><td id="ins33885" class="val-cell">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>⌨️ Controls</h2>
+      <dl class="keys-list">
+        <dt>← / Q or Backspace</dt><dd>Hold to Rewind (in death pause, simply hold <b>Left</b>!)</dd>
+        <dt>F5 / F9</dt><dd>Quick Save (F5) / Quick Load (F9) state to active slot</dd>
+        <dt>Space / ↑ / Z–M</dt><dd>Jump (Space, Shift, Z, X, C, V, B, N, M, 0, 7, ↑)</dd>
+        <dt>Delete / ]</dt><dd>Instant jump back 2 seconds</dd>
+        <dt>Enter</dt><dd>Start game from Title Screen</dd>
+        <dt>H, J, K, L</dt><dd>Toggle in-game music (In the Hall of the Mountain King)</dd>
+        <dt>A, S, D, F, G</dt><dd>Pause game (press any other key to resume)</dd>
+        <dt>Shift + Space</dt><dd>Abandon game &amp; return to Title Screen</dd>
+        <dt>6031769</dt><dd>Type 6031769 in-game to enable original teleporter (1–5 + 6)</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// EMBEDDED DATA FROM "Manic Miner (1983)(Bug-Byte Software).z80"
+// AND ZX SPECTRUM 48K ROM CHARACTER SET (15616..16383)
+// ============================================================================
+const Z80_BASE64 = "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";
+const ROM_FONT_BASE64 = "AAAAAAAAAAAAEBAQEAAQAAAkJAAAAAAAACR+JCR+JAAACD4oPgo+CABiZAgQJkYAABAoECpEOgAACBAAAAAAAAAECAgICAQAACAQEBAQIAAAABQIPggUAAAACAg+CAgAAAAAAAAICBAAAAAAPgAAAAAAAAAAGBgAAAACBAgQIAAAPEZKUmI8AAAYKAgICD4AADxCAjxAfgAAPEIMAkI8AAAIGChIfggAAH5AfAJCPAAAPEB8QkI8AAB+AgQIEBAAADxCPEJCPAAAPEJCPgI8AAAAABAAABAAAAAQAAAQECAAAAQIEAgEAAAAAD4APgAAAAAQCAQIEAAAPEIECAAIAAA8SlZeQDwAADxCQn5CQgAAfEJ8QkJ8AAA8QkBAQjwAAHhEQkJEeAAAfkB8QEB+AAB+QHxAQEAAADxCQE5CPAAAQkJ+QkJCAAA+CAgICD4AAAICAkJCPAAAREhwSERCAABAQEBAQH4AAEJmWkJCQgAAQmJSSkZCAAA8QkJCQjwAAHxCQnxAQAAAPEJCUko8AAB8QkJ8REIAADxAPAJCPAAA/hAQEBAQAABCQkJCQjwAAEJCQkIkGAAAQkJCQlokAABCJBgYJEIAAIJEKBAQEAAAfgQIECB+AAAOCAgICA4AAABAIBAIBAAAcBAQEBBwAAAQOFQQEBAAAAAAAAAAAP8AHCJ4ICB+AAAAOAQ8RDwAACAgPCIiPAAAABwgICAcAAAEBDxERDwAAAA4RHhAPAAADBAYEBAQAAAAPEREPAQ4AEBAeERERAAAEAAwEBA4AAAEAAQEBCQYACAoMDAoJAAAEBAQEBAMAAAAaFRUVFQAAAB4RERERAAAADhEREQ4AAAAeEREeEBAAAA8REQ8BAYAABwgICAgAAAAOEA4BHgAABA4EBAQDAAAAEREREQ4AAAAREQoKBAAAABEVFRUKAAAAEQoEChEAAAAREREPAQ4AAB8CBAgfAAADggwCAgOAAAICAgICAgAAHAQDBAQcAAAFCgAAAAAADxCmaGhmUI8";
+
+const CAVERNS_META = [
+  { id: 0,  addr: 45056, tele: "6",     name: "Central Cavern" },
+  { id: 1,  addr: 46080, tele: "16",    name: "The Cold Room" },
+  { id: 2,  addr: 47104, tele: "26",    name: "The Menagerie" },
+  { id: 3,  addr: 48128, tele: "126",   name: "Abandoned Uranium Workings" },
+  { id: 4,  addr: 49152, tele: "36",    name: "Eugene's Lair" },
+  { id: 5,  addr: 50176, tele: "136",   name: "Processing Plant" },
+  { id: 6,  addr: 51200, tele: "236",   name: "The Vat" },
+  { id: 7,  addr: 52224, tele: "1236",  name: "Miner Willy meets the Kong Beast" },
+  { id: 8,  addr: 53248, tele: "46",    name: "Wacky Amoebatrons" },
+  { id: 9,  addr: 54272, tele: "146",   name: "The Endorian Forest" },
+  { id: 10, addr: 55296, tele: "246",   name: "Attack of the Mutant Telephones" },
+  { id: 11, addr: 56320, tele: "1246",  name: "Return of the Alien Kong Beast" },
+  { id: 12, addr: 57344, tele: "346",   name: "Ore Refinery" },
+  { id: 13, addr: 58368, tele: "1346",  name: "Skylab Landing Bay" },
+  { id: 14, addr: 59392, tele: "2346",  name: "The Bank" },
+  { id: 15, addr: 60416, tele: "12346", name: "The Sixteenth Cavern" },
+  { id: 16, addr: 61440, tele: "56",    name: "The Warehouse" },
+  { id: 17, addr: 62464, tele: "156",   name: "Amoebatrons' Revenge" },
+  { id: 18, addr: 63488, tele: "256",   name: "Solar Power Generator" },
+  { id: 19, addr: 64512, tele: "1256",  name: "The Final Barrier" }
+];
+
+// Authentic ZX Spectrum 48K Colour Palette (RGBA)
+// Normal (0..7) and Bright (8..15)
+const ZX_PALETTE = [
+  [0, 0, 0],       // 0: Black
+  [0, 0, 215],     // 1: Blue
+  [215, 0, 0],     // 2: Red
+  [215, 0, 215],   // 3: Magenta
+  [0, 215, 0],     // 4: Green
+  [0, 215, 215],   // 5: Cyan
+  [215, 215, 0],   // 6: Yellow
+  [215, 215, 215], // 7: White
+  [0, 0, 0],       // 8: Bright Black
+  [0, 0, 255],     // 9: Bright Blue
+  [255, 0, 0],     // 10: Bright Red
+  [255, 0, 255],   // 11: Bright Magenta
+  [0, 255, 0],     // 12: Bright Green
+  [0, 255, 255],   // 13: Bright Cyan
+  [255, 255, 0],   // 14: Bright Yellow
+  [255, 255, 255]  // 15: Bright White
+];
+
+// 64KB Z80 Memory Map (0..65535)
+const mem = new Uint8Array(65536);
+let snapshotBackup = new Uint8Array(49152);
+let borderColor = 0;
+let flashCounter = 0;
+
+function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return arr;
+}
+
+// Decompress .z80 snapshot (supports v1 compressed/uncompressed and v2/v3 paged)
+function loadZ80Snapshot(z80Data) {
+  const romFont = base64ToBytes(ROM_FONT_BASE64);
+  mem.fill(0, 0, 16384);
+  mem.set(romFont, 15616); // 0x3D00..0x3FFF ZX Spectrum character set
+
+  const pc = z80Data[6] | (z80Data[7] << 8);
+  if (pc !== 0) {
+    // Version 1 .z80 format
+    const isCompressed = (z80Data[12] & 32) !== 0;
+    if (!isCompressed) {
+      mem.set(z80Data.subarray(30, 30 + 49152), 16384);
+    } else {
+      let src = 30;
+      let dst = 16384;
+      const end = z80Data.length - 4; // exclude 00 ED ED 00 end marker
+      while (src < end && dst < 65536) {
+        if (z80Data[src] === 0xED && z80Data[src + 1] === 0xED) {
+          const count = z80Data[src + 2];
+          const val = z80Data[src + 3];
+          for (let k = 0; k < count && dst < 65536; k++) {
+            mem[dst++] = val;
+          }
+          src += 4;
+        } else {
+          mem[dst++] = z80Data[src++];
+        }
+      }
+    }
+  } else {
+    // Version 2/3 .z80 format
+    const hdrLen = z80Data[30] | (z80Data[31] << 8);
+    let pos = 32 + hdrLen;
+    const pageMap = { 8: 16384, 4: 32768, 5: 49152 };
+    while (pos < z80Data.length) {
+      const len = z80Data[pos] | (z80Data[pos + 1] << 8);
+      const page = z80Data[pos + 2];
+      pos += 3;
+      const targetBase = pageMap[page];
+      if (targetBase !== undefined) {
+        if (len === 0xFFFF) {
+          mem.set(z80Data.subarray(pos, pos + 16384), targetBase);
+          pos += 16384;
+        } else {
+          let dst = targetBase;
+          const end = pos + len;
+          while (pos < end && dst < targetBase + 16384) {
+            if (pos + 1 < end && z80Data[pos] === 0xED && z80Data[pos + 1] === 0xED) {
+              const count = z80Data[pos + 2];
+              const val = z80Data[pos + 3];
+              for (let k = 0; k < count; k++) mem[dst++] = val;
+              pos += 4;
+            } else {
+              mem[dst++] = z80Data[pos++];
+            }
+          }
+        }
+      } else {
+        pos += (len === 0xFFFF ? 16384 : len);
+      }
+    }
+  }
+  snapshotBackup.set(mem.subarray(16384, 65536));
+}
+
+// ============================================================================
+// WEB AUDIO API ZX SPECTRUM 1-BIT BEEPER SYNTHESIZER
+// ============================================================================
+let audioCtx = null;
+let audioEnabled = true;
+let activeAudioNode = null;
+
+function ensureAudio() {
+  if (!audioEnabled) return null;
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) audioCtx = new AudioContextClass();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+function stopActiveSound() {
+  if (activeAudioNode) {
+    try { activeAudioNode.stop(); } catch (e) {}
+    activeAudioNode = null;
+  }
+}
+
+// Synthesize exact 2-voice ZX Spectrum beeper note from routine 37596 (The Blue Danube)
+function playBlueDanubeNote(cDur, dFreq1, eFreq2) {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const totalLoops = cDur * 256;
+  // Each inner loop at 37624..37642 averages ~56 T-states on 3.5MHz Z80
+  const durationSec = (totalLoops * 56) / 3500000;
+  const sampleRate = ctx.sampleRate;
+  const numSamples = Math.max(1, Math.floor(durationSec * sampleRate));
+  const buf = ctx.createBuffer(1, numSamples, sampleRate);
+  const data = buf.getChannelData(0);
+
+  let d = dFreq1 & 0xFF;
+  let e = eFreq2 & 0xFF;
+  let level = -0.18;
+  let loopAcc = 0;
+  const loopsPerSample = totalLoops / numSamples;
+
+  for (let i = 0; i < numSamples; i++) {
+    loopAcc += loopsPerSample;
+    const steps = Math.floor(loopAcc);
+    loopAcc -= steps;
+    for (let s = 0; s < steps; s++) {
+      d = (d - 1) & 0xFF;
+      if (d === 0) {
+        d = dFreq1 & 0xFF;
+        level = -level;
+      }
+      e = (e - 1) & 0xFF;
+      if (e === 0) {
+        e = eFreq2 & 0xFF;
+        level = -level;
+      }
+    }
+    data[i] = level;
+  }
+
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start();
+  activeAudioNode = src;
+}
+
+// Synthesize 1-voice ZX Spectrum beeper pulse loop (in-game tune, jump, fall, death, air, victory)
+function playBeeperPulse(halfPeriodTStates, halfCycles, volume = 0.16) {
+  const ctx = ensureAudio();
+  if (!ctx || halfPeriodTStates <= 0 || halfCycles <= 0) return;
+  const totalTStates = halfPeriodTStates * halfCycles;
+  const durationSec = Math.min(0.25, totalTStates / 3500000);
+  const sampleRate = ctx.sampleRate;
+  const numSamples = Math.max(1, Math.floor(durationSec * sampleRate));
+  const buf = ctx.createBuffer(1, numSamples, sampleRate);
+  const data = buf.getChannelData(0);
+
+  const tStatesPerSample = 3500000 / sampleRate;
+  let tAcc = 0;
+  let level = volume;
+
+  for (let i = 0; i < numSamples; i++) {
+    tAcc += tStatesPerSample;
+    while (tAcc >= halfPeriodTStates) {
+      tAcc -= halfPeriodTStates;
+      level = -level;
+    }
+    data[i] = level;
+  }
+
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  src.connect(ctx.destination);
+  src.start();
+}
+
+// Routine 34898..34909: In-game music note (In the Hall of the Mountain King)
+function playInGameMusicNote(pitchE) {
+  if (!pitchE) return;
+  // 768 iterations of 40 T-states; toggles speaker every pitchE iterations
+  const halfPeriodT = pitchE * 40;
+  const halfCycles = Math.max(2, Math.floor(768 / pitchE));
+  playBeeperPulse(halfPeriodT, halfCycles, 0.14);
+}
+
+// ============================================================================
+// KEYBOARD & INPUT STATE
+// ============================================================================
+const keysDown = new Set();
+const touchState = { left: false, right: false, jump: false, enter: false, rewind: false };
+
+const LEFT_KEYS  = new Set(['KeyQ', 'KeyE', 'KeyT', 'KeyU', 'KeyO', 'Digit5', 'ArrowLeft']);
+const RIGHT_KEYS = new Set(['KeyW', 'KeyR', 'KeyY', 'KeyI', 'KeyP', 'Digit8', 'ArrowRight']);
+const JUMP_KEYS  = new Set(['Space', 'ShiftLeft', 'ShiftRight', 'KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Digit0', 'Digit7', 'ArrowUp']);
+const MUSIC_KEYS = new Set(['KeyH', 'KeyJ', 'KeyK', 'KeyL']);
+const PAUSE_KEYS = new Set(['KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyG']);
+
+function isLeftPressed() {
+  if (touchState.left) return true;
+  for (const k of LEFT_KEYS) if (keysDown.has(k)) return true;
+  return false;
+}
+function isRightPressed() {
+  if (touchState.right) return true;
+  for (const k of RIGHT_KEYS) if (keysDown.has(k)) return true;
+  return false;
+}
+function isJumpPressed() {
+  if (touchState.jump) return true;
+  for (const k of JUMP_KEYS) if (keysDown.has(k)) return true;
+  return false;
+}
+function isEnterPressed() {
+  return touchState.enter || keysDown.has('Enter') || keysDown.has('NumpadEnter');
+}
+function isMusicKeyPressed() {
+  for (const k of MUSIC_KEYS) if (keysDown.has(k)) return true;
+  return false;
+}
+function isShiftSpacePressed() {
+  return (keysDown.has('ShiftLeft') || keysDown.has('ShiftRight')) && keysDown.has('Space');
+}
+
+// ZX Spectrum Half-Row Port 0xF7FE (keys 1-2-3-4-5) and 0xEFFE (keys 0-9-8-7-6)
+function readPort1to5() {
+  let v = 0x1F;
+  if (keysDown.has('Digit1')) v &= ~1;
+  if (keysDown.has('Digit2')) v &= ~2;
+  if (keysDown.has('Digit3')) v &= ~4;
+  if (keysDown.has('Digit4')) v &= ~8;
+  if (keysDown.has('Digit5')) v &= ~16;
+  return v;
+}
+function readPort0to6() {
+  let v = 0x1F;
+  if (keysDown.has('Digit0')) v &= ~1;
+  if (keysDown.has('Digit9')) v &= ~2;
+  if (keysDown.has('Digit8')) v &= ~4;
+  if (keysDown.has('Digit7')) v &= ~8;
+  if (keysDown.has('Digit6')) v &= ~16;
+  return v;
+}
+
+// ============================================================================
+// SKOOLKIT DISASSEMBLY ROUTINES (33792..37699)
+// ============================================================================
+
+let gameState = 'TITLE_TUNE'; // TITLE_TUNE, TITLE_SCROLL, PLAYING, DYING, BOOT_DESCEND, GAME_OVER_GLISTEN, CAVERN_FLASH, CAVERN_AIR_BONUS, VICTORY_ANIM
+let stateTimer = 0;
+let stateStep = 0;
+let tuneIY = 33902;
+let activePianoKeys = [null, null];
+let paused = false;
+let gameSpeed = 1.0;
+
+// Trainer flags
+let trainerInfLives = false;
+let trainerInfAir = false;
+let trainerInvincible = false;
+
+// Read/Write 16-bit little-endian word in mem
+function readWord(addr) {
+  return mem[addr] | (mem[addr + 1] << 8);
+}
+function writeWord(addr, val) {
+  mem[addr] = val & 0xFF;
+  mem[addr + 1] = (val >> 8) & 0xFF;
+}
+
+// Routine 37579: Print a single character (or 37589: copy 8 bytes to screen/buffer)
+function routine_37589_copy8RowBytes(hl, de) {
+  let d = (de >> 8) & 0xFF;
+  const e = de & 0xFF;
+  for (let b = 0; b < 8; b++) {
+    mem[(d << 8) | e] = mem[hl];
+    hl = (hl + 1) & 0xFFFF;
+    d = (d + 1) & 0xFF;
+  }
+}
+
+function routine_37579_printChar(ascii, de) {
+  // LD H,7 / LD L,A / SET 7,L / ADD HL,HL x3 -> 15360 + ((ascii | 128) * 8)
+  const hl = ((7 << 8) | (ascii | 128)) << 3;
+  routine_37589_copy8RowBytes(hl & 0xFFFF, de);
+}
+
+// Routine 37562: Print a message of length C from IX to display file address DE
+function routine_37562_printMessage(ix, de, c) {
+  for (let i = 0; i < c; i++) {
+    routine_37579_printChar(mem[(ix + i) & 0xFFFF], de);
+    de = (de + 1) & 0xFFFF;
+  }
+}
+
+// Routine 36852: Draw a 16x16 sprite
+// Input: hl = screen/buffer address, de = sprite data address, c = mode (0=overwrite, 1=blend+collision)
+// Returns true (NZ) if collision detected when c=1, false (Z) otherwise.
+function routine_36852_drawSprite(hl, de, c) {
+  let h = (hl >> 8) & 0xFF;
+  let l = hl & 0xFF;
+  const blend = (c & 1) !== 0;
+
+  for (let b = 0; b < 16; b++) {
+    // Left byte
+    let addr = (h << 8) | l;
+    let spriteByte = mem[de];
+    if (blend) {
+      if ((spriteByte & mem[addr]) !== 0) return true; // Collision (NZ)!
+      spriteByte |= mem[addr];
+    }
+    mem[addr] = spriteByte;
+
+    l = (l + 1) & 0xFF;
+    de = (de + 1) & 0xFFFF;
+
+    // Right byte
+    addr = (h << 8) | l;
+    spriteByte = mem[de];
+    if (blend) {
+      if ((spriteByte & mem[addr]) !== 0) return true; // Collision (NZ)!
+      spriteByte |= mem[addr];
+    }
+    mem[addr] = spriteByte;
+
+    l = (l - 1) & 0xFF;
+    h = (h + 1) & 0xFF;
+    de = (de + 1) & 0xFFFF;
+
+    if ((h & 7) === 0) {
+      h = (h - 8) & 0xFF;
+      l = (l + 32) & 0xFF;
+      if ((l & 224) === 0) {
+        h = (h + 8) & 0xFF;
+      }
+    }
+  }
+  return false;
+}
+
+// Routine 37675: Calculate the attribute file address for a piano key
+function routine_37675_pianoKeyAddr(freq) {
+  const sub8 = (freq - 8) & 0xFF;
+  const rrca3 = ((sub8 >> 3) | (sub8 << 5)) & 0xFF;
+  const l = (~rrca3) | 224;
+  return (89 << 8) | (l & 0xFF);
+}
+
+// Routine 34252: Display the title screen and play the theme tune
+function routine_34252_initTitleScreen() {
+  stopActiveSound();
+  mem[33799] = 0; // Current cavern number = 0
+  mem[33881] = 0; // Kempston joystick indicator
+  mem[33882] = 0; // Game mode indicator (0 = game)
+  mem[33883] = 0; // In-game music note index
+  mem[33880] = 0; // Screen flash counter
+  mem[33879] = 2; // Lives remaining
+  mem[33884] |= 1; // Set bit 0 keypress flag
+
+  // Clear entire display file 16384..22527
+  mem.fill(0, 16384, 16384 + 6144);
+  // Copy 4096 bytes from 40960 to 16384 (top two-thirds of display file)
+  mem.set(mem.subarray(40960, 40960 + 4096), 16384);
+  // Draw Willy at (9,29) -> HL=18493, DE=33344, C=0
+  routine_36852_drawSprite(18493, 33344, 0);
+  // Copy 256 attribute bytes from 64512 to 22528 (top third of attribute file)
+  mem.set(mem.subarray(64512, 64512 + 256), 22528);
+  // Copy 512 attribute bytes from 40448 to 22784 (bottom two-thirds of attribute file)
+  mem.set(mem.subarray(40448, 40448 + 512), 22784);
+
+  borderColor = 0;
+  tuneIY = 33902;
+  activePianoKeys = [null, null];
+  gameState = 'TITLE_TUNE';
+  stateTimer = 0;
+  updateCavernButtons();
+}
+
+// Step through The Blue Danube notes (Routine 37596)
+function stepTitleTune(dtMs) {
+  if (isEnterPressed()) {
+    if (activePianoKeys[0] !== null) mem[activePianoKeys[0]] = 56;
+    if (activePianoKeys[1] !== null) mem[activePianoKeys[1]] = 56;
+    stopActiveSound();
+    mem[33882] = 0;
+    routine_34436_startGame();
+    return;
+  }
+
+  stateTimer -= dtMs;
+  if (stateTimer > 0) return;
+
+  // Reset previous piano keys to white (56)
+  if (activePianoKeys[0] !== null) mem[activePianoKeys[0]] = 56;
+  if (activePianoKeys[1] !== null) mem[activePianoKeys[1]] = 56;
+
+  const cDur = mem[tuneIY];
+  if (cDur === 255) {
+    // Tune finished -> start scrolling title message (34361)
+    mem[32988] = 0;
+    borderColor = 0;
+    gameState = 'TITLE_SCROLL';
+    stateTimer = 0;
+    return;
+  }
+
+  const dFreq1 = mem[tuneIY + 1];
+  const eFreq2 = mem[tuneIY + 2];
+  const hl1 = routine_37675_pianoKeyAddr(dFreq1);
+  mem[hl1] = 80; // INK 0, PAPER 2 (red), BRIGHT 1
+  const hl2 = routine_37675_pianoKeyAddr(eFreq2);
+  mem[hl2] = 40; // INK 0, PAPER 5 (cyan), BRIGHT 0
+  activePianoKeys = [hl1, hl2];
+
+  // In 37619..37624, A holds L from 37675, so OUT (254),A sets border to hl2 & 7
+  borderColor = hl2 & 7;
+
+  playBlueDanubeNote(cDur, dFreq1, eFreq2);
+  tuneIY += 3;
+  // Duration of note: cDur * 256 * 56 T-states / 3.5MHz
+  stateTimer = (cDur * 256 * 56) / 3500;
+}
+
+// Step through scrolling message on title screen (34361..34435)
+function stepTitleScroll(dtMs) {
+  if (isEnterPressed()) {
+    mem[33882] = 0;
+    routine_34436_startGame();
+    return;
+  }
+
+  stateTimer -= dtMs;
+  if (stateTimer > 0) return;
+  stateTimer = 95; // ~0.1s delay at 34401
+
+  const idx = mem[32988];
+  // Print 32 chars from 40192 + idx at (19,0) -> 20576
+  routine_37562_printMessage(40192 + idx, 20576, 32);
+
+  // Animate Willy at (9,29) -> 18493
+  const frameOffset = (idx & 6) << 5;
+  routine_36852_drawSprite(18493, 33280 + frameOffset, 0);
+
+  const nextIdx = (idx + 1) & 0xFF;
+  mem[32988] = nextIdx;
+  if (nextIdx === 224) {
+    // Enter demo mode (34431)
+    mem[33882] = 64;
+    routine_34436_startGame();
+  }
+}
+
+// Routine 35445: Draw the current cavern to the screen buffer at 28672
+function routine_35445_drawCavern() {
+  for (let half = 0; half < 2; half++) {
+    const baseIx = 24064 + half * 256;
+    const baseD = half === 0 ? 112 : 120;
+    for (let c = 0; c < 256; c++) {
+      const attr = mem[baseIx + c];
+      // Z80 CPIR from HL=32800, BC=72
+      let hl = 32800;
+      let bc = 72;
+      while (bc > 0) {
+        const match = (mem[hl] === attr);
+        hl++;
+        bc--;
+        if (match) break;
+      }
+      for (let b = 0; b < 8; b++) {
+        mem[((baseD + b) << 8) | c] = mem[hl + b];
+      }
+    }
+  }
+  // 35497: Special top-half bitmap copy for Cavern 19 (The Final Barrier)
+  if (mem[33799] === 19) {
+    mem.set(mem.subarray(40960, 40960 + 2048), 28672);
+  }
+}
+
+// Routine 34436: Start the game (or demo mode)
+function routine_34436_startGame() {
+  stopActiveSound();
+  // Initialise score digits at 33829..33838 to '0' (48)
+  mem.fill(48, 33829, 33839);
+  routine_34449_enterCavern();
+}
+
+// Routine 34449: Initialise current cavern and enter main loop
+function routine_34449_enterCavern() {
+  const cavern = mem[33799];
+  const cavernAddr = 45056 + cavern * 1024;
+
+  // Copy 512 attribute bytes into empty cavern attribute buffer at 24064
+  mem.set(mem.subarray(cavernAddr, cavernAddr + 512), 24064);
+  // Copy 512 status/definition bytes into game status buffer at 32768
+  mem.set(mem.subarray(cavernAddr + 512, cavernAddr + 1024), 32768);
+
+  // Draw current cavern to screen buffer at 28672
+  routine_35445_drawCavern();
+
+  // Clear bottom third of display file (20480..22527)
+  mem.fill(0, 20480, 22528);
+
+  // Print cavern name (32768) at (16,0) -> 20480
+  routine_37562_printMessage(32768, 20480, 32);
+
+  // Print 'AIR' (33816) at (17,0) -> 20512
+  routine_37562_printMessage(33816, 20512, 3);
+
+  // Draw initial air bar (34517..34542) across rows H=82..85 from L=36 to L=mem[32956]
+  const airEnd = mem[32956];
+  for (let h = 82; h < 86; h++) {
+    for (let l = 36; l <= airEnd; l++) {
+      mem[(h << 8) | l] = 255;
+    }
+  }
+
+  // Print 'High Score 000000   Score 000000' (33839) at (19,0) -> 20576
+  routine_37562_printMessage(33839, 20576, 32);
+
+  // Set border colour from 32883
+  borderColor = mem[32883] & 7;
+
+  // If in demo mode (33882 != 0), reset counter to 64
+  if (mem[33882] !== 0) {
+    mem[33882] = 64;
+  }
+
+  gameState = 'PLAYING';
+  stateTimer = 0;
+  updateCavernButtons();
+}
+
+// Routine 35388: Decrease the air remaining in the current cavern
+// Returns true (Z flag set) if air has completely run out.
+function routine_35388_decreaseAir() {
+  if (trainerInfAir && gameState === 'PLAYING') {
+    mem[32957] = (mem[32957] - 4) & 0xFF;
+    return false;
+  }
+  let clock = (mem[32957] - 4) & 0xFF;
+  mem[32957] = clock;
+  if (clock === 252) {
+    let air = mem[32956];
+    if (air === 36) {
+      return true; // Out of air (Z set)!
+    }
+    air = (air - 1) & 0xFF;
+    mem[32956] = air;
+  }
+  const numPixels = (clock & 224) >> 5;
+  let e = 0;
+  for (let b = 0; b < numPixels; b++) {
+    e = ((e >> 1) | 128) & 0xFF;
+  }
+  const airL = mem[32956];
+  for (let h = 82; h < 86; h++) {
+    mem[(h << 8) | airL] = e;
+  }
+  return false;
+}
+
+// Routine 35714: Adjust Willy's attribute buffer location at 32876 based on his Y-coordinate at 32872
+function routine_35714_updateWillyAttrAddr() {
+  const y2 = mem[32872];
+  let l = y2 & 240;
+  const carry = (l & 128) !== 0 ? 1 : 0;
+  l = (l << 1) & 0xFF;
+  const h = 92 + carry;
+  l = l | (mem[32876] & 31);
+  mem[32876] = l;
+  mem[32877] = h;
+  return (h << 8) | l;
+}
+
+// Routine 35770: Animate a crumbling floor tile at attribute buffer address HL (in 23552)
+function routine_35770_crumbleFloor(hl) {
+  const c = hl & 0xFF;
+  let b = (((hl >> 8) + 27) | 7) & 0xFF;
+  while ((b & 7) !== 0) {
+    b = (b - 1) & 0xFF;
+    const above = mem[(b << 8) | c];
+    b = (b + 1) & 0xFF;
+    mem[(b << 8) | c] = above;
+    b = (b - 1) & 0xFF;
+  }
+  mem[(b << 8) | c] = 0;
+  b = (b + 7) & 0xFF;
+  if (mem[(b << 8) | c] === 0) {
+    // Replace tile attribute in empty cavern buffer 24064 (HL + 512) with background attribute
+    mem[hl + 512] = mem[32800];
+  }
+}
+
+// Routine 36101 / 36102 / 36103: Kill Willy
+let willyKilledThisTick = false;
+function routine_36101_killWilly() {
+  if (trainerInvincible) return;
+  mem[32875] = 255;
+  willyKilledThisTick = true;
+}
+
+// Routine 35515 & 35805: Move Willy (vertical + horizontal)
+function routine_35515_moveWilly() {
+  let airborne = mem[32875];
+  let checkFloor = true;
+
+  if (airborne === 1) {
+    // Willy is jumping (35522)
+    const jumpCounter = mem[32878];
+    const deltaY = (jumpCounter & 254) - 8; // signed -8..+8
+    mem[32872] = (mem[32872] + deltaY) & 0xFF;
+    const hl = routine_35714_updateWillyAttrAddr();
+
+    // Check if top-left or top-right cell of Willy overlaps a wall tile (35537)
+    const wallAttr = mem[32827];
+    if (mem[hl] === wallAttr || mem[hl + 1] === wallAttr) {
+      // 35746: Head hit wall tile ceiling
+      mem[32872] = (mem[32872] + 16) & 240;
+      routine_35714_updateWillyAttrAddr();
+      mem[32875] = 2; // falling
+      mem[32874] &= ~2; // stop horizontal movement
+      return;
+    }
+
+    // Increment jumping animation counter (35549)
+    const newJump = (jumpCounter + 1) & 0xFF;
+    mem[32878] = newJump;
+
+    // Jumping sound effect (35556..35582)
+    let pitchA = newJump - 8;
+    if (pitchA < 0) pitchA = -pitchA;
+    const pitchD = ((pitchA + 1) << 3) & 0xFF;
+    playBeeperPulse(13 * pitchD + 35, 32, 0.14);
+
+    if (newJump === 18) {
+      // 35734: Finished jump
+      mem[32875] = 6;
+      return;
+    }
+    if (newJump !== 16 && newJump !== 13) {
+      checkFloor = false;
+    }
+  }
+
+  if (checkFloor) {
+    // 35600: Check floor cells beneath Willy
+    if ((mem[32872] & 15) === 0) {
+      const hlLeft = (readWord(32876) + 64) & 0xFFFF;
+      const hlRight = (hlLeft + 1) & 0xFFFF;
+      const crumbleAttr = mem[32818];
+      const nasty1 = mem[32845];
+      const nasty2 = mem[32854];
+      const bgAttr = mem[32800];
+
+      if (mem[hlLeft] === crumbleAttr) routine_35770_crumbleFloor(hlLeft);
+      const leftIsNasty = (mem[hlLeft] === nasty1 || mem[hlLeft] === nasty2);
+
+      if (!leftIsNasty) {
+        if (mem[hlRight] === crumbleAttr) routine_35770_crumbleFloor(hlRight);
+        const rightIsNasty = (mem[hlRight] === nasty1 || mem[hlRight] === nasty2);
+
+        if (!rightIsNasty) {
+          if (mem[hlRight] !== bgAttr || mem[hlLeft] !== bgAttr) {
+            // Willy is standing on or has landed on solid ground -> 35805
+            routine_35805_landAndWalk(hlLeft);
+            return;
+          }
+        }
+      }
+    }
+
+    // 35665: Willy did not land on solid ground
+    if (mem[32875] !== 1) {
+      // Falling or about to start falling (35673)
+      mem[32874] &= ~2; // Reset movement bit
+      if (mem[32875] === 0) {
+        // 35740: Just started falling
+        mem[32875] = 2;
+        return;
+      }
+      // 35682: Already falling
+      const nextAir = (mem[32875] + 1) & 0xFF;
+      mem[32875] = nextAir;
+      const pitchD = ((nextAir << 4) | (nextAir >> 4)) & 0xFF;
+      playBeeperPulse(13 * (pitchD || 256) + 35, 32, 0.14);
+
+      mem[32872] = (mem[32872] + 8) & 0xFF; // Move down 4 pixels
+      routine_35714_updateWillyAttrAddr();
+      return;
+    }
+  }
+
+  // 35971: Horizontal movement during jump
+  routine_35971_stepHorizontal();
+}
+
+// Routine 35805: Willy is on solid ground (check fall height, conveyor, left/right keys, jump keys)
+function routine_35805_landAndWalk(hlLeftBelow) {
+  if (mem[32875] >= 12 && !trainerInvincible) {
+    // Landed after falling too far!
+    routine_36101_killWilly();
+    return;
+  }
+
+  let e = 255;
+  mem[32875] = 0; // Airborne status = 0
+
+  // Check conveyor (35819..35834)
+  const convAttr = mem[32836];
+  if (mem[hlLeftBelow] === convAttr || mem[hlLeftBelow + 1] === convAttr) {
+    e = (mem[32879] - 3) & 0xFF; // 253 (bit 1 reset = left) or 254 (bit 0 reset = right)
+  }
+
+  // Merge keyboard/joystick left & right into E (35835..35891)
+  if (isRightPressed()) e &= ~4; // reset even bit 2
+  if (isLeftPressed())  e &= ~8; // reset odd bit 3
+
+  let c = 0;
+  if ((e & 42) !== 42) c = 4;     // Any left bit (1,3,5) reset
+  if ((e & 21) !== 21) c |= 8;    // Any right bit (0,2,4) reset
+
+  // Update Willy's direction and movement flags via table at 33800 (35912..35924)
+  mem[32874] = mem[33800 + mem[32874] + c];
+
+  // Check jump keys (35927..35970)
+  if (isJumpPressed()) {
+    mem[32878] = 0; // Jump counter = 0
+    mem[32875] = 1; // Airborne status = 1 (jumping)
+  }
+
+  routine_35971_stepHorizontal();
+}
+
+// Routine 35971: Move Willy horizontally according to flags at 32874
+function routine_35971_stepHorizontal() {
+  const flags = mem[32874];
+  if ((flags & 2) === 0) return; // Not moving
+
+  const wallAttr = mem[32827];
+  const threeRows = (mem[32872] & 15) !== 0;
+
+  if ((flags & 1) !== 0) {
+    // Moving left (35985)
+    const frame = mem[32873];
+    if (frame !== 0) {
+      mem[32873] = frame - 1;
+      return;
+    }
+    // Cross cell boundary left (35996)
+    const hl = readWord(32876);
+    if (mem[hl - 1 + 32] === wallAttr) return;
+    if (threeRows && mem[hl - 1 + 64] === wallAttr) return;
+    if (mem[hl - 1] === wallAttr) return;
+
+    writeWord(32876, (hl - 1) & 0xFFFF);
+    mem[32873] = 3;
+  } else {
+    // Moving right (36042)
+    const frame = mem[32873];
+    if (frame !== 3) {
+      mem[32873] = frame + 1;
+      return;
+    }
+    // Cross cell boundary right (36054)
+    const hl = readWord(32876);
+    if (mem[hl + 2 + 32] === wallAttr) return;
+    if (threeRows && mem[hl + 2 + 64] === wallAttr) return;
+    if (mem[hl + 2] === wallAttr) return;
+
+    writeWord(32876, (hl + 1) & 0xFFFF);
+    mem[32873] = 0;
+  }
+}
+
+// Routine 37434, 37471 & 37503: Check/set Willy's attribute cells in 23552 and draw Willy to 24576
+function routine_37434_checkAndDrawWilly() {
+  let hl = readWord(32876);
+  const cells = [
+    { addr: hl,      c: 15 },
+    { addr: hl + 1,  c: 15 },
+    { addr: hl + 32, c: 15 },
+    { addr: hl + 33, c: 15 },
+    { addr: hl + 64, c: mem[32872] },
+    { addr: hl + 65, c: mem[32872] }
+  ];
+  const bgAttr = mem[32800];
+  const nasty1 = mem[32845];
+  const nasty2 = mem[32854];
+
+  for (const cell of cells) {
+    if (mem[cell.addr] === bgAttr && (cell.c & 15) !== 0) {
+      mem[cell.addr] = bgAttr | 7; // Force white INK for Willy
+    }
+    if (mem[cell.addr] === nasty1 || mem[cell.addr] === nasty2) {
+      routine_36101_killWilly();
+      if (willyKilledThisTick) return;
+    }
+  }
+
+  // Routine 37503: Draw Willy to screen buffer at 24576
+  let ix = (131 << 8) | mem[32872]; // Lookup table at 33536
+  const dirBit = (mem[32874] & 1) ? 128 : 0;
+  const frameBits = (mem[32873] & 3) << 5;
+  let de = (130 << 8) | (dirBit | frameBits); // Sprite table at 33280
+  const colC = mem[32876] & 31;
+
+  for (let b = 0; b < 16; b++) {
+    const rowAddr = (mem[ix + 1] << 8) | (mem[ix] | colC);
+    mem[rowAddr] |= mem[de];
+    mem[rowAddr + 1] |= mem[de + 1];
+    ix += 2;
+    de += 2;
+  }
+}
+
+// Routine 36111: Move the horizontal guardians in the current cavern
+function routine_36111_moveHorizontalGuardians() {
+  for (let iy = 32958; mem[iy] !== 255; iy += 7) {
+    const byte0 = mem[iy];
+    if (byte0 === 0) continue;
+
+    // Check animation speed (bit 7 of byte0 vs bit 2 of game clock at 32957)
+    const clockBit7 = (mem[32957] & 4) ? 128 : 0;
+    if ((clockBit7 & byte0) !== 0) continue;
+
+    const frame = mem[iy + 4];
+    if (frame === 3) {
+      if (mem[iy + 1] === mem[iy + 6]) {
+        mem[iy + 4] = 7; // Turn left
+      } else {
+        mem[iy + 4] = 0;
+        mem[iy + 1] = (mem[iy + 1] + 1) & 0xFF;
+      }
+    } else if (frame === 4) {
+      if (mem[iy + 1] === mem[iy + 5]) {
+        mem[iy + 4] = 0; // Turn right
+      } else {
+        mem[iy + 4] = 7;
+        mem[iy + 1] = (mem[iy + 1] - 1) & 0xFF;
+      }
+    } else if (frame < 4) {
+      mem[iy + 4] = (frame + 1) & 0xFF;
+    } else {
+      mem[iy + 4] = (frame - 1) & 0xFF;
+    }
+  }
+}
+
+// Routine 36266: Draw the horizontal guardians in the current cavern
+function routine_36266_drawHorizontalGuardians() {
+  const cavern = mem[33799];
+  for (let iy = 32958; mem[iy] !== 255; iy += 7) {
+    const byte0 = mem[iy];
+    if (byte0 === 0) continue;
+
+    const hlAttr = readWord(iy + 1);
+    const attr = byte0 & 127;
+    mem[hlAttr] = attr;
+    mem[hlAttr + 1] = attr;
+    mem[hlAttr + 32] = attr;
+    mem[hlAttr + 33] = attr;
+
+    const frame = mem[iy + 4];
+    let e = ((frame >> 3) | (frame << 5)) & 0xFF;
+    if (cavern >= 7 && cavern !== 9 && cavern !== 15) {
+      e |= 128;
+    }
+    const de = (129 << 8) | e; // 33024 + e
+    const hlScreen = (mem[iy + 3] << 8) | mem[iy + 1];
+    if (routine_36852_drawSprite(hlScreen, de, 1)) {
+      routine_36101_killWilly();
+      if (willyKilledThisTick) return;
+    }
+  }
+}
+
+// Routine 36447: Helper to set 3x2 guardian attributes in 23552
+function routine_36447_set3x2GuardianAttrs(hl, aAttr) {
+  const combined = (mem[32800] & 248) | aAttr;
+  mem[hl] = combined;
+  mem[hl + 1] = combined;
+  mem[hl + 32] = combined;
+  mem[hl + 33] = combined;
+  mem[hl + 64] = combined;
+  mem[hl + 65] = combined;
+}
+
+// Routine 36344: Move and draw Eugene in Eugene's Lair (Cavern 4)
+function routine_36344_moveAndDrawEugene() {
+  if (mem[32884] === 0 || mem[32987] === 0) {
+    // Moving down (or all items collected)
+    const nextY = (mem[32988] + 1) & 0xFF;
+    if (nextY === 88) {
+      mem[32987] ^= 1;
+    } else {
+      mem[32988] = nextY;
+    }
+  } else {
+    // Moving up
+    const nextY = (mem[32988] - 1) & 0xFF;
+    if (nextY === 0) {
+      mem[32987] ^= 1;
+    } else {
+      mem[32988] = nextY;
+    }
+  }
+
+  const y = mem[32988] & 127;
+  const deLookup = (131 << 8) | (y << 1);
+  const hlScreen = (mem[deLookup + 1] << 8) | (mem[deLookup] | 15);
+  if (routine_36852_drawSprite(hlScreen, 32992, 1)) {
+    routine_36101_killWilly();
+    if (willyKilledThisTick) return;
+  }
+
+  const a1 = ((mem[32988] & 120) << 1) | 7;
+  const lAttr = ((a1 << 1) | 1) & 0xFF;
+  const hAttr = 92 + ((a1 & 128) ? 1 : 0);
+  const ink = (mem[32884] !== 0) ? 7 : ((mem[32957] >> 2) & 7);
+  routine_36447_set3x2GuardianAttrs((hAttr << 8) | lAttr, ink);
+}
+
+// Routine 36469: Move and draw the Skylabs in Skylab Landing Bay (Cavern 13)
+function routine_36469_moveAndDrawSkylabs() {
+  for (let iy = 32989; mem[iy] !== 255; iy += 7) {
+    const y = mem[iy + 2];
+    if (y >= mem[iy + 6]) {
+      // Disintegrating
+      const nextFrame = (mem[iy + 1] + 1) & 0xFF;
+      mem[iy + 1] = nextFrame;
+      if (nextFrame === 8) {
+        mem[iy + 2] = mem[iy + 5];
+        mem[iy + 3] = (mem[iy + 3] + 8) & 31;
+        mem[iy + 1] = 0;
+      }
+    } else {
+      mem[iy + 2] = (y + mem[iy + 4]) & 0xFF;
+    }
+
+    const curY = mem[iy + 2];
+    const deLookup = (131 << 8) | ((curY << 1) & 0xFF);
+    const hlScreen = (mem[deLookup + 1] << 8) | ((mem[deLookup] + mem[iy + 3]) & 0xFF);
+    const frame = mem[iy + 1];
+    const eSprite = ((frame >> 3) | (frame << 5)) & 0xFF;
+    if (routine_36852_drawSprite(hlScreen, (129 << 8) | eSprite, 1)) {
+      routine_36101_killWilly();
+      if (willyKilledThisTick) return;
+    }
+
+    const hAttr = 92 + ((curY & 64) >> 6);
+    const lAttr = ((curY << 2) & 224) | mem[iy + 3];
+    routine_36447_set3x2GuardianAttrs((hAttr << 8) | lAttr, mem[iy]);
+  }
+}
+
+// Routine 36593: Move and draw the vertical guardians in the current cavern
+function routine_36593_moveAndDrawVerticalGuardians() {
+  for (let iy = 32989; mem[iy] !== 255; iy += 7) {
+    mem[iy + 1] = (mem[iy + 1] + 1) & ~4 & 0xFF;
+    const nextY = (mem[iy + 2] + mem[iy + 4]) & 0xFF;
+    if (nextY < mem[iy + 5] || nextY >= mem[iy + 6]) {
+      mem[iy + 4] = (-mem[iy + 4]) & 0xFF;
+    } else {
+      mem[iy + 2] = nextY;
+    }
+
+    const curY = mem[iy + 2] & 127;
+    const deLookup = (131 << 8) | (curY << 1);
+    const hlScreen = (mem[deLookup + 1] << 8) | (mem[deLookup] | mem[iy + 3]);
+    const frame = mem[iy + 1];
+    const eSprite = ((frame >> 3) | (frame << 5)) & 0xFF;
+    if (routine_36852_drawSprite(hlScreen, (129 << 8) | eSprite, 1)) {
+      routine_36101_killWilly();
+      if (willyKilledThisTick) return;
+    }
+
+    const rawY = mem[iy + 2];
+    const hAttr = 92 + ((rawY & 64) >> 6);
+    const lAttr = ((rawY << 2) & 224) | mem[iy + 3];
+    routine_36447_set3x2GuardianAttrs((hAttr << 8) | lAttr, mem[iy]);
+  }
+}
+
+// Routine 37403: Flip a switch in a Kong Beast cavern if Willy is touching it
+function routine_37403_flipKongSwitch(hlSwitch) {
+  const willyL = mem[32876];
+  if (((willyL + 1) & 254) !== (hlSwitch & 0xFF)) return false;
+  if (mem[32877] !== ((hlSwitch >> 8) & 0xFF)) return false;
+
+  const l = hlSwitch & 0xFF;
+  if (mem[(117 << 8) | l] !== mem[32869]) return false;
+
+  mem[(117 << 8) | l] = 8;
+  mem[(118 << 8) | l] = 6;
+  mem[(119 << 8) | l] = 6;
+  return true;
+}
+
+// Routine 37173: Move and draw the Kong Beast (Caverns 7 and 11)
+function routine_37173_moveAndDrawKong() {
+  routine_37403_flipKongSwitch(23558); // Left switch at (0,6)
+  if (mem[32987] === 2) return; // Kong already dead
+
+  if (mem[29958] !== 16) {
+    // Left switch has been flipped -> open wall at (11,17) and (12,17) if not yet removed
+    if (mem[24433] !== 0) {
+      let h = 127;
+      let clearedRow = false;
+      while (h !== 119) {
+        if (mem[(h << 8) | 113] !== 0) {
+          mem[(h << 8) | 113] = 0;
+          mem[((h ^ 7) << 8) | 145] = 0;
+          clearedRow = true;
+          break;
+        }
+        h--;
+      }
+      if (!clearedRow) {
+        const bgAttr = mem[32800];
+        mem[24433] = bgAttr;
+        mem[24465] = bgAttr;
+        mem[32971] = 114; // Extend guardian 2's right limit
+      }
+    }
+
+    // Check right-hand switch at (0,18) -> 23570
+    if (routine_37403_flipKongSwitch(23570)) {
+      mem[32988] = 0;
+      mem[32987] = 1; // Falling
+      const bgAttr = mem[32800];
+      mem[24143] = bgAttr;
+      mem[24144] = bgAttr;
+      for (let b = 0; b < 8; b++) {
+        const rowH = 112 + b;
+        mem[(rowH << 8) | 79] = 0;
+        mem[(rowH << 8) | 80] = 0;
+      }
+    }
+
+    if (mem[32987] !== 0) {
+      // Kong is falling (37283)
+      const y = mem[32988];
+      if (y === 100) {
+        mem[32987] = 2; // Dead
+        return;
+      }
+      const nextY = (y + 4) & 0xFF;
+      mem[32988] = nextY;
+      playBeeperPulse(13 * nextY + 35, 16, 0.14);
+
+      const deLookup = (131 << 8) | ((nextY << 1) & 0xFF);
+      const hlScreen = (mem[deLookup + 1] << 8) | (mem[deLookup] | 15);
+      const deSprite = (129 << 8) | ((mem[32957] & 32) | 64);
+      routine_36852_drawSprite(hlScreen, deSprite, 0);
+
+      routine_37118_addToScore(33836); // +100 points
+
+      let hlAttr = ((23 << 8) | (nextY & 120)) << 2;
+      hlAttr = (hlAttr & 0xFF00) | ((hlAttr & 0xFF) | 15);
+      routine_36447_set3x2GuardianAttrs(hlAttr & 0xFFFF, 6);
+      return;
+    }
+  }
+
+  // 37369: Kong Beast is still on the ledge
+  const deSprite = (129 << 8) | (mem[32957] & 32);
+  if (routine_36852_drawSprite(24591, deSprite, 1)) {
+    routine_36101_killWilly();
+    if (willyKilledThisTick) return;
+  }
+  mem[23599] = 68;
+  mem[23600] = 68;
+  mem[23567] = 68;
+  mem[23568] = 68;
+}
+
+// Routine 36211: Move and draw the light beam in Solar Power Generator (Cavern 18)
+function routine_36211_solarBeam() {
+  let hl = 23575; // (0,23) in 23552
+  let de = 32;
+  const floorAttr = mem[32809];
+  const wallAttr = mem[32827];
+  const bgAttr = mem[32800];
+
+  for (let safety = 0; safety < 512; safety++) {
+    const cur = mem[hl];
+    if (cur === floorAttr || cur === wallAttr) return;
+    if (cur === 39) {
+      // Touching Willy -> drain air by 4 ticks
+      routine_35388_decreaseAir();
+      routine_35388_decreaseAir();
+      routine_35388_decreaseAir();
+      routine_35388_decreaseAir();
+    } else if (cur !== bgAttr) {
+      // Hit a guardian -> deflect beam between downwards (+32) and left (-1)
+      de = (de === 32) ? -1 : 32;
+    }
+    mem[hl] = 119; // INK 7, PAPER 6, BRIGHT 1
+    hl = (hl + de) & 0xFFFF;
+  }
+}
+
+// Routine 37125: Move the conveyor in the current cavern
+function routine_37125_moveConveyor() {
+  const hl = readWord(32880);
+  const len = mem[32882];
+  const dir = mem[32879];
+  const h1 = (hl >> 8) & 0xFF;
+  const h3 = (h1 + 2) & 0xFF;
+  const baseL = hl & 0xFF;
+
+  let row1 = mem[hl];
+  let row3 = mem[(h3 << 8) | baseL];
+
+  if (dir === 0) {
+    // Moving left: RLC A twice, RRC C twice
+    row1 = ((row1 << 2) | (row1 >> 6)) & 0xFF;
+    row3 = ((row3 >> 2) | (row3 << 6)) & 0xFF;
+  } else {
+    // Moving right: RRC A twice, RLC C twice
+    row1 = ((row1 >> 2) | (row1 << 6)) & 0xFF;
+    row3 = ((row3 << 2) | (row3 >> 6)) & 0xFF;
+  }
+
+  for (let i = 0; i < len; i++) {
+    const l = (baseL + i) & 0xFF;
+    mem[(h1 << 8) | l] = row1;
+    mem[(h3 << 8) | l] = row3;
+  }
+}
+
+// Routine 37098 / 37118: Add to the score
+function routine_37118_addToScore(hl) {
+  while (true) {
+    if (mem[hl] !== 57) { // '9'
+      mem[hl] = (mem[hl] + 1) & 0xFF;
+      return;
+    }
+    mem[hl] = 48; // Roll over to '0'
+    hl = (hl - 1) & 0xFFFF;
+    if ((hl & 0xFF) === 42) { // 33834 (10,000s digit)
+      mem[33880] = 8; // Screen flash counter
+      mem[33879] = (mem[33879] + 1) & 0xFF; // Extra life!
+    }
+  }
+}
+
+// Routine 36707: Draw the items in the current cavern and collect any that Willy is touching
+function routine_36707_drawAndCollectItems() {
+  mem[32884] = 0;
+  for (let iy = 32885; mem[iy] !== 255; iy += 5) {
+    const itemAttr = mem[iy];
+    if (itemAttr === 0) continue; // Already collected
+
+    const deAttr = readWord(iy + 1);
+    if ((mem[deAttr] & 7) === 7) {
+      // Willy is touching this item!
+      routine_37118_addToScore(33836); // +100 points
+      mem[iy] = 0;
+      continue;
+    }
+
+    // Cycle item INK colour through 3, 4, 5, 6
+    const baseB = (itemAttr & 248) | 3;
+    const newAttr = (baseB + (itemAttr & 3)) & 0xFF;
+    mem[iy] = newAttr;
+    mem[deAttr] = newAttr;
+    mem[32884] = newAttr;
+
+    const deScreen = (mem[iy + 3] << 8) | (deAttr & 0xFF);
+    routine_37589_copy8RowBytes(32948, deScreen);
+  }
+
+  if (mem[32884] === 0) {
+    // All items collected -> set FLASH bit 7 on portal attribute at 32911
+    mem[32911] |= 128;
+  }
+}
+
+// Routine 36805: Draw the portal, or move to the next cavern if Willy has entered it
+// Returns true if Willy entered the flashing portal.
+function routine_36805_drawPortalOrExit() {
+  const hlAttr = readWord(32944);
+  if (
+    mem[32876] === (hlAttr & 0xFF) &&
+    mem[32877] === ((hlAttr >> 8) & 0xFF) &&
+    (mem[32911] & 128) !== 0
+  ) {
+    routine_36904_triggerNextCavern();
+    return true;
+  }
+
+  const portalAttr = mem[32911];
+  mem[hlAttr] = portalAttr;
+  mem[hlAttr + 1] = portalAttr;
+  mem[hlAttr + 32] = portalAttr;
+  mem[hlAttr + 33] = portalAttr;
+
+  const hlScreen = readWord(32946);
+  routine_36852_drawSprite(hlScreen, 32912, 0);
+  return false;
+}
+
+// Routine 36904: Move to the next cavern
+function routine_36904_triggerNextCavern() {
+  let nextCav = (mem[33799] + 1) & 0xFF;
+  if (nextCav === 20) {
+    if (mem[33882] === 0 && mem[33885] !== 7) {
+      // Completed The Final Barrier without cheating! (36926)
+      routine_36852_drawSprite(16467, 33376, 0); // Willy above ground at (2,19)
+      routine_36852_drawSprite(16563, 45792, 0); // Swordfish over portal
+      mem[22611] = 47; mem[22612] = 47;
+      mem[22643] = 39; mem[22644] = 39;
+      mem[22707] = 69; mem[22708] = 69;
+      mem[22739] = 70; mem[22740] = 71;
+      mem[22771] = 0;  mem[22772] = 0;
+
+      mem[33799] = 0;
+      gameState = 'VICTORY_ANIM';
+      stateStep = 50; // D = 50..1
+      stateTimer = 0;
+      return;
+    }
+    nextCav = 0;
+  }
+  mem[33799] = nextCav;
+  gameState = 'CAVERN_FLASH';
+  stateStep = 63; // A = 63..1
+  stateTimer = 0;
+}
+
+// Step Victory Animation (36983..37008)
+function stepVictoryAnim(dtMs) {
+  stateTimer -= dtMs;
+  if (stateTimer > 0) return;
+  stateTimer = 35;
+
+  const d = stateStep;
+  borderColor = 0;
+  playBeeperPulse(13 * ((3 * d + 128) & 0xFF) + 35, 24, 0.16);
+
+  stateStep--;
+  if (stateStep <= 0) {
+    gameState = 'CAVERN_FLASH';
+    stateStep = 63;
+    stateTimer = 0;
+  }
+}
+
+// Step Cavern Attribute Flash (37012..37036)
+function stepCavernFlash(dtMs) {
+  stateTimer -= dtMs;
+  if (stateTimer > 0) return;
+  stateTimer = 8;
+
+  for (let k = 0; k < 2 && stateStep > 0; k++) {
+    mem.fill(stateStep, 22528, 22528 + 512);
+    stateStep--;
+  }
+
+  if (stateStep <= 0) {
+    if (mem[33882] !== 0) {
+      // Demo mode -> enter next cavern immediately
+      routine_34449_enterCavern();
+    } else {
+      gameState = 'CAVERN_AIR_BONUS';
+      stateTimer = 0;
+    }
+  }
+}
+
+// Step Cavern Air Bonus Countdown (37044..37096)
+function stepCavernAirBonus(dtMs) {
+  stateTimer -= dtMs;
+  if (stateTimer > 0) return;
+  stateTimer = 12;
+
+  // Authentic rapid countdown: 20 ticks per step (~1.1 seconds total for full air bar)
+  // Hold any movement / action key (Space, Enter, Jump, Left, Right) to turbo skip
+  const fastForward = isJumpPressed() || isEnterPressed() || isLeftPressed() || isRightPressed();
+  const ticksPerStep = fastForward ? 72 : 20;
+
+  for (let t = 0; t < ticksPerStep; t++) {
+    if (routine_35388_decreaseAir()) {
+      routine_34449_enterCavern();
+      return;
+    }
+    routine_37118_addToScore(33838); // +1 point
+  }
+  routine_37562_printMessage(33833, 20602, 6);
+
+  const s = mem[32956];
+  const d = (((~s) & 63) << 1) & 0xFF;
+  borderColor = 0;
+  playBeeperPulse(13 * (d || 2) + 25, 8, 0.15);
+}
+
+// Step Death Fade Sequence (35071..35139)
+function stepDyingSequence(dtMs) {
+  stateTimer -= dtMs;
+  if (stateTimer > 0) return;
+
+  const attr = stateStep; // 71 down to 64
+  mem.fill(attr, 22528, 22528 + 512);
+  borderColor = 0;
+
+  const eAnd7 = attr & 7;
+  const d = (((~attr) & 7) << 3) | 7;
+  const c = 8 + 32 * eAnd7;
+  playBeeperPulse(13 * d + 35, c, 0.16);
+  stateTimer = Math.max(35, ((13 * d + 35) * c) / 3500);
+
+  stateStep--;
+  if (stateStep === 63) {
+    if (trainerInfLives) {
+      routine_34449_enterCavern();
+      return;
+    }
+    const lives = mem[33879];
+    if (lives === 0) {
+      routine_35140_initGameOver();
+    } else {
+      mem[33879] = (lives - 1) & 0xFF;
+      routine_34449_enterCavern();
+    }
+  }
+}
+
+// Routine 35140: Display the game over sequence
+function routine_35140_initGameOver() {
+  // Compare current score (33833) with high score (33823)
+  for (let i = 0; i < 6; i++) {
+    const curDigit = mem[33833 + i];
+    const highDigit = mem[33823 + i];
+    if (curDigit < highDigit) break;
+    if (curDigit > highDigit) {
+      mem.set(mem.subarray(33833, 33839), 33823);
+      break;
+    }
+  }
+
+  // Clear top two-thirds of display file (16384..20479)
+  mem.fill(0, 16384, 16384 + 4096);
+  mem[32988] = 0; // Boot distance from top
+
+  // Draw Willy at (12,15) -> 18575, and Plinth (46816) at (14,15) -> 18639
+  routine_36852_drawSprite(18575, 33344, 0);
+  routine_36852_drawSprite(18639, 46816, 0);
+
+  gameState = 'BOOT_DESCEND';
+  stateTimer = 0;
+}
+
+// Step Boot Descent onto Willy (35210..35282)
+function stepBootDescend(dtMs) {
+  stateTimer -= dtMs;
+  if (stateTimer > 0) return;
+
+  const dist = mem[32988];
+  const bc = (131 << 8) | dist;
+  const l = mem[bc] | 15;
+  const h = (mem[bc + 1] - 32) & 0xFF;
+  // Draw boot (47840) without erasing previous boot (extending trouser leg!)
+  routine_36852_drawSprite((h << 8) | l, 47840, 0);
+
+  const pitchE = (~dist) & 0xFF;
+  borderColor = 0;
+  playBeeperPulse(13 * pitchE + 35, 64, 0.15);
+  stateTimer = Math.max(22, ((13 * pitchE + 35) * 64) / 3500);
+
+  const paperAttr = ((dist & 12) << 1) | 71;
+  mem.fill(paperAttr, 22528, 22528 + 512);
+
+  const nextDist = (dist + 4) & 0xFF;
+  mem[32988] = nextDist;
+  if (nextDist === 196) {
+    // Print "Game" (33871) at (6,10) -> 16586 and "Over" (33875) at (6,18) -> 16594
+    routine_37562_printMessage(33871, 16586, 4);
+    routine_37562_printMessage(33875, 16594, 4);
+    gameState = 'GAME_OVER_GLISTEN';
+    stateStep = 96; // Glisten cycles (~1.6s)
+    stateTimer = 0;
+  }
+}
+
+// Step "Game Over" Glisten Effect (35313..35385)
+function stepGameOverGlisten(dtMs) {
+  stateTimer -= dtMs;
+  if (stateTimer > 0) return;
+  stateTimer = 18;
+
+  const c = stateStep & 0xFF;
+  const cols = [22730, 22731, 22732, 22733, 22738, 22739, 22740, 22741];
+  let a = c;
+  for (let i = 0; i < 8; i++) {
+    a = (a & 7) | 64;
+    mem[cols[i]] = a;
+    a++;
+  }
+
+  stateStep--;
+  if (stateStep <= 0) {
+    routine_34252_initTitleScreen();
+  }
+}
+
+// ============================================================================
+// ROUTINE 34574: MAIN GAME LOOP PASS
+// ============================================================================
+function stepMainLoopPass() {
+  willyKilledThisTick = false;
+
+  if (trainerInfLives) mem[33879] = Math.max(mem[33879], 2);
+
+  // 1. Draw remaining lives at bottom of screen (34574..34607)
+  // Clear life area first only the way original does? Wait: original overwrites when cavern starts,
+  // and draws `lives` sprites starting at 20640.
+  const lives = mem[33879];
+  let hlLife = 20640;
+  if (lives > 0) {
+    const noteIdx = mem[33883];
+    const willyOffset = (noteIdx << 3) & 96;
+    for (let b = 0; b < lives && b < 8; b++) {
+      routine_36852_drawSprite(hlLife, 33280 + willyOffset, 0);
+      hlLife += 2;
+    }
+  }
+
+  // 2. Draw cheat boot if 6031769 counter == 7 (34608..34622)
+  if (mem[33885] === 7) {
+    routine_36852_drawSprite(hlLife, 47840, 0);
+  }
+
+  // 3. Copy empty cavern attribute buffer (24064) to working buffer (23552) (34623)
+  mem.set(mem.subarray(24064, 24064 + 512), 23552);
+
+  // 4. Copy empty cavern screen buffer (28672) to working buffer (24576) (34634)
+  mem.set(mem.subarray(28672, 28672 + 4096), 24576);
+
+  // 5. Move horizontal guardians (34645)
+  routine_36111_moveHorizontalGuardians();
+
+  // 6. Move Willy & check/draw Willy if not in demo mode (34648..34661)
+  const isDemo = (mem[33882] !== 0);
+  if (!isDemo) {
+    routine_35515_moveWilly();
+    if (!willyKilledThisTick) {
+      routine_37434_checkAndDrawWilly();
+    }
+  }
+
+  let enteredPortal = false;
+  if (!willyKilledThisTick) {
+    // 7. Draw horizontal guardians (34662)
+    routine_36266_drawHorizontalGuardians();
+  }
+  if (!willyKilledThisTick) {
+    // 8. Move conveyor (34665)
+    routine_37125_moveConveyor();
+    // 9. Draw & collect items (34668)
+    routine_36707_drawAndCollectItems();
+
+    const cavern = mem[33799];
+    // 10. Cavern-specific guardians
+    if (cavern === 4) {
+      routine_36344_moveAndDrawEugene();
+    }
+    if (!willyKilledThisTick) {
+      if (cavern === 13) {
+        routine_36469_moveAndDrawSkylabs();
+      } else {
+        if (cavern >= 8) {
+          routine_36593_moveAndDrawVerticalGuardians();
+        }
+        if (!willyKilledThisTick) {
+          if (cavern === 7 || cavern === 11) {
+            routine_37173_moveAndDrawKong();
+          }
+          if (!willyKilledThisTick && cavern === 18) {
+            routine_36211_solarBeam();
+          }
+        }
+      }
+    }
+  }
+
+  if (!willyKilledThisTick) {
+    // 11. Draw portal or advance cavern if Willy entered it (34719)
+    enteredPortal = routine_36805_drawPortalOrExit();
+    if (enteredPortal) return;
+  }
+
+  // 12. Entry point 34722: Copy screen buffer 24576 to display file 16384
+  mem.set(mem.subarray(24576, 24576 + 4096), 16384);
+
+  // 13. Screen flash counter for 10,000-point extra life (34733..34759)
+  if (mem[33880] !== 0) {
+    const f = (mem[33880] - 1) & 0xFF;
+    mem[33880] = f;
+    const flashPaper = (f << 3) & 56;
+    mem.fill(flashPaper, 23552, 23552 + 512);
+  }
+
+  // 14. Copy attribute buffer 23552 to attribute file 22528 (34760)
+  mem.set(mem.subarray(23552, 23552 + 512), 22528);
+
+  // 15. Print score (33833) at (19,26) -> 20602, and high score (33823) at (19,11) -> 20587
+  routine_37562_printMessage(33833, 20602, 6);
+  routine_37562_printMessage(33823, 20587, 6);
+
+  // 16. Decrease air supply (34795)
+  const outOfAir = routine_35388_decreaseAir();
+  if (outOfAir) {
+    triggerFatalOrNextDemo();
+    return;
+  }
+
+  // 17. Check SHIFT + SPACE to quit to title screen (34801)
+  if (isShiftSpacePressed()) {
+    routine_34252_initTitleScreen();
+    return;
+  }
+
+  // 18. Check if Willy died (34837)
+  if (mem[32875] === 255) {
+    triggerFatalOrNextDemo();
+    return;
+  }
+
+  // 19. Record safe frame in Rewind History (Willy is alive and screen 16384..23295 is freshly drawn)
+  if (mem[33882] === 0) {
+    pushRewindFrame();
+  }
+
+  // 20. Check H-J-K-L-ENTER music toggle & play in-game music note (34845..34909)
+  if (isMusicKeyPressed()) {
+    if ((mem[33884] & 1) === 0) {
+      mem[33884] ^= 3;
+      syncAudioButtonUI();
+    }
+  } else {
+    mem[33884] &= ~1;
+  }
+
+  if ((mem[33884] & 2) === 0) {
+    const nextNoteIdx = (mem[33883] + 1) & 0xFF;
+    mem[33883] = nextNoteIdx;
+    const tableOffset = (nextNoteIdx & 126) >> 1;
+    const pitchE = mem[34188 + tableOffset];
+    borderColor = mem[32883] & 7;
+    playInGameMusicNote(pitchE);
+  }
+
+  // 21. Handle Demo Mode countdown & keypresses (34911..34945)
+  if (mem[33882] !== 0) {
+    const dCount = (mem[33882] - 1) & 0xFF;
+    if (dCount === 0) {
+      triggerFatalOrNextDemo();
+      return;
+    }
+    mem[33882] = dCount;
+    if (keysDown.size > 0 || touchState.left || touchState.right || touchState.jump || touchState.enter) {
+      routine_34252_initTitleScreen();
+      return;
+    }
+  }
+
+  // 22. Check 6031769 Teleport Keys (34948..35068)
+  const port06 = readPort0to6();
+  const port15 = readPort1to5();
+  if ((port06 & 16) === 0 && mem[33885] === 7) {
+    // Key '6' pressed while cheat active
+    const cavNum = (~port15) & 31;
+    if (cavNum > 0 && cavNum < 20) {
+      mem[33799] = cavNum;
+      routine_34449_enterCavern();
+      return;
+    } else if (cavNum === 0 && keysDown.has('Digit6')) {
+      if (mem[33799] !== 0) {
+        mem[33799] = 0;
+        routine_34449_enterCavern();
+        return;
+      }
+    }
+  }
+
+  // Check 6031769 sequence (34984..35068)
+  if (mem[33885] !== 7) {
+    const cheatIdx = mem[33885];
+    const ix = 33888 + (cheatIdx << 1);
+    if (port15 === mem[ix]) {
+      if (port06 === mem[ix + 1]) {
+        mem[33885] = (cheatIdx + 1) & 0xFF;
+        syncCheatButtonUI();
+      } else if (port06 !== 31 && port06 !== mem[ix - 1]) {
+        mem[33885] = 0;
+      }
+    } else if (port15 !== 31 && port15 !== mem[ix - 2]) {
+      mem[33885] = 0;
+    }
+  }
+}
+
+// ============================================================================
+// TIME REWIND & DEATH-SAVE ENGINE
+// ============================================================================
+const MAX_REWIND_FRAMES = 420; // ~30 seconds of gameplay at 13.9 ticks/sec
+const rewindHistory = [];
+let autoCatchDeath = true;
+let rewindHoldButton = false;
+let rewindAccumulator = 0;
+let deathRewindActive = false;
+let deathFreezeEnterTime = 0;
+
+function isRewindActive() {
+  if (
+    rewindHoldButton ||
+    touchState.rewind ||
+    keysDown.has('Backspace') ||
+    keysDown.has('BracketLeft')
+  ) {
+    return true;
+  }
+  // Allow holding the left movement key to rewind when in death pause
+  if (deathRewindActive && isLeftPressed()) {
+    return true;
+  }
+  return false;
+}
+
+function pushRewindFrame() {
+  rewindHistory.push({
+    ram: mem.slice(16384, 33886),
+    border: mem[32883] & 7
+  });
+  if (rewindHistory.length > MAX_REWIND_FRAMES) {
+    rewindHistory.shift();
+  }
+  syncRewindSliderUI();
+}
+
+function restoreRewindFrame(snap) {
+  if (!snap) return;
+  mem.set(snap.ram, 16384);
+  borderColor = snap.border;
+  willyKilledThisTick = false;
+  mem[32875] = mem[32875] === 255 ? 0 : mem[32875];
+  gameState = 'PLAYING';
+  hideDeathBanner();
+  updateCavernButtons();
+  syncCheatButtonUI();
+  syncAudioButtonUI();
+}
+
+function stepRewindOneFrame() {
+  if (rewindHistory.length === 0) return false;
+  const snap = rewindHistory.length > 1 ? rewindHistory.pop() : rewindHistory[0];
+  restoreRewindFrame(snap);
+  // Subtle reverse-tape beeper chirp
+  const freq = 50 + ((rewindHistory.length * 7) & 63);
+  playBeeperPulse(13 * freq + 35, 6, 0.09);
+  syncRewindSliderUI();
+  return true;
+}
+
+function jumpRewindFrames(count) {
+  if (rewindHistory.length === 0) return;
+  let snap = null;
+  for (let i = 0; i < count && rewindHistory.length > 1; i++) {
+    snap = rewindHistory.pop();
+  }
+  if (!snap) snap = rewindHistory[0];
+  restoreRewindFrame(snap);
+  playBeeperPulse(13 * 45 + 35, 16, 0.12);
+  syncRewindSliderUI();
+}
+
+function syncRewindSliderUI() {
+  const slider = document.getElementById('rewindSlider');
+  const lbl = document.getElementById('lblRewindTime');
+  const len = rewindHistory.length;
+  slider.max = Math.max(0, len - 1);
+  slider.value = Math.max(0, len - 1);
+  const secs = (len * 0.072).toFixed(1);
+  lbl.textContent = `${secs}s`;
+}
+
+function showDeathBanner() {
+  document.getElementById('deathBanner').classList.add('visible');
+}
+
+function hideDeathBanner() {
+  document.getElementById('deathBanner').classList.remove('visible');
+}
+
+function startDyingSequence() {
+  hideDeathBanner();
+  deathRewindActive = false;
+  gameState = 'DYING';
+  stateStep = 71; // Attribute 71 down to 64
+  stateTimer = 0;
+}
+
+// Routine 35071: Triggered when air runs out, Willy dies, or demo timer expires
+function triggerFatalOrNextDemo() {
+  if (mem[33882] !== 0) {
+    routine_36904_triggerNextCavern();
+  } else if (autoCatchDeath && rewindHistory.length > 0) {
+    // Freeze right before death so the player can rewind!
+    gameState = 'DEATH_FREEZE';
+    deathFreezeEnterTime = performance.now();
+    deathRewindActive = false;
+    borderColor = 2; // Red alert border
+    showDeathBanner();
+    playBeeperPulse(13 * 90 + 35, 28, 0.16);
+  } else {
+    startDyingSequence();
+  }
+}
+
+// ============================================================================
+// ZX SPECTRUM DISPLAY FILE + ATTRIBUTE + BORDER RENDERER (320x240)
+// ============================================================================
+const canvas = document.getElementById('specCanvas');
+const ctx2d = canvas.getContext('2d');
+const imgData = ctx2d.createImageData(320, 240);
+const pixels32 = new Uint32Array(imgData.data.buffer);
+
+const PALETTE_32 = ZX_PALETTE.map(([r, g, b]) => (255 << 24) | (b << 16) | (g << 8) | r);
+
+function renderSpectrumScreen() {
+  const borderCol32 = PALETTE_32[borderColor & 7];
+  pixels32.fill(borderCol32);
+
+  const flashInvert = (flashCounter & 16) !== 0;
+
+  // Render 256x192 screen centered inside 320x240 (32px horizontal border, 24px vertical border)
+  for (let y = 0; y < 192; y++) {
+    // ZX Spectrum display file address for pixel row y (0..191)
+    const third = (y >> 6) & 3;
+    const charRow = (y >> 3) & 7;
+    const pixelLine = y & 7;
+    const bitmapRowAddr = 16384 | (third << 11) | (pixelLine << 8) | (charRow << 5);
+    const attrRowAddr = 22528 + ((y >> 3) << 5);
+    const dstRowOffset = (y + 24) * 320 + 32;
+
+    for (let col = 0; col < 32; col++) {
+      const byte = mem[bitmapRowAddr + col];
+      const attr = mem[attrRowAddr + col];
+      const bright = (attr & 64) ? 8 : 0;
+      let ink = (attr & 7) + bright;
+      let paper = ((attr >> 3) & 7) + bright;
+      if ((attr & 128) && flashInvert) {
+        const tmp = ink; ink = paper; paper = tmp;
+      }
+      const ink32 = PALETTE_32[ink];
+      const paper32 = PALETTE_32[paper];
+      const baseDst = dstRowOffset + (col << 3);
+
+      pixels32[baseDst]     = (byte & 128) ? ink32 : paper32;
+      pixels32[baseDst + 1] = (byte & 64)  ? ink32 : paper32;
+      pixels32[baseDst + 2] = (byte & 32)  ? ink32 : paper32;
+      pixels32[baseDst + 3] = (byte & 16)  ? ink32 : paper32;
+      pixels32[baseDst + 4] = (byte & 8)   ? ink32 : paper32;
+      pixels32[baseDst + 5] = (byte & 4)   ? ink32 : paper32;
+      pixels32[baseDst + 6] = (byte & 2)   ? ink32 : paper32;
+      pixels32[baseDst + 7] = (byte & 1)   ? ink32 : paper32;
+    }
+  }
+
+  ctx2d.putImageData(imgData, 0, 0);
+}
+
+// ============================================================================
+// UI & INSPECTOR UPDATES
+// ============================================================================
+function readAscii(addr, len) {
+  let s = '';
+  for (let i = 0; i < len; i++) s += String.fromCharCode(mem[addr + i]);
+  return s;
+}
+
+function updateInspectorUI() {
+  const cav = mem[33799] % 20;
+  const meta = CAVERNS_META[cav] || CAVERNS_META[0];
+  document.getElementById('lblMode').textContent =
+    isRewindActive() && rewindHistory.length > 0 ? '⏪ REWIND' :
+    paused ? 'PAUSED' :
+    (gameState === 'PLAYING' && mem[33882] !== 0) ? 'DEMO' :
+    gameState;
+  document.getElementById('lblCavern').textContent = `${cav}: ${meta.name}`;
+  document.getElementById('lblScore').textContent = readAscii(33833, 6);
+  document.getElementById('lblHigh').textContent = readAscii(33823, 6);
+  document.getElementById('lblLives').textContent = mem[33879];
+
+  document.getElementById('ins33799').textContent = `${cav} (${meta.addr})`;
+  const wAddr = readWord(32876);
+  const wRow = (wAddr - 23552) >> 5;
+  const wCol = (wAddr - 23552) & 31;
+  document.getElementById('ins32876').textContent = `${wAddr} (r:${wRow}, c:${wCol})`;
+  document.getElementById('ins32872').textContent = `${mem[32872]} (y=${mem[32872] >> 1}px)`;
+  document.getElementById('ins32873').textContent = mem[32873];
+  const dFlags = mem[32874];
+  document.getElementById('ins32874').textContent =
+    `${dFlags} (${(dFlags & 1) ? 'Left' : 'Right'}, ${(dFlags & 2) ? 'Moving' : 'Still'})`;
+  document.getElementById('ins32875').textContent = mem[32875];
+  document.getElementById('ins32878').textContent = mem[32878];
+  document.getElementById('ins32956').textContent = `${mem[32956]} / ${mem[32957]}`;
+  document.getElementById('ins33885').textContent = `${mem[33885]}${mem[33885] === 7 ? ' (ACTIVE)' : ''}`;
+}
+
+function buildCavernGrid() {
+  const grid = document.getElementById('cavernGrid');
+  grid.innerHTML = '';
+  for (const c of CAVERNS_META) {
+    const btn = document.createElement('button');
+    btn.className = 'cavern-btn';
+    btn.id = `cavBtn_${c.id}`;
+    btn.innerHTML = `<span><b>${c.id}.</b> ${c.name}</span><span class="tele">[${c.tele}]</span>`;
+    btn.addEventListener('click', () => {
+      ensureAudio();
+      stopActiveSound();
+      hideDeathBanner();
+      mem[33882] = 0; // Exit demo mode if active
+      mem[33799] = c.id;
+      routine_34449_enterCavern();
+    });
+    grid.appendChild(btn);
+  }
+}
+
+function updateCavernButtons() {
+  const cur = mem[33799];
+  for (const c of CAVERNS_META) {
+    const el = document.getElementById(`cavBtn_${c.id}`);
+    if (el) el.classList.toggle('current', c.id === cur);
+  }
+}
+
+function syncCheatButtonUI() {
+  const active = mem[33885] === 7;
+  const btn = document.getElementById('btnCheat6031769');
+  btn.textContent = `🥾 6031769 Cheat: ${active ? 'ON' : 'OFF'}`;
+  btn.classList.toggle('active-toggle', active);
+}
+
+function syncAudioButtonUI() {
+  const inGameMuted = (mem[33884] & 2) !== 0;
+  const on = audioEnabled && !inGameMuted;
+  const btn = document.getElementById('btnMusic');
+  btn.textContent = `🔊 Audio: ${on ? 'ON' : 'OFF'}`;
+  btn.classList.toggle('active-toggle', on);
+}
+
+// ============================================================================
+// MAIN ANIMATION LOOP (50Hz ULA Render + Authentic Z80 Frame Timing)
+// ============================================================================
+let lastTime = performance.now();
+let mainLoopAccumulator = 0;
+let flashTimer = 0;
+
+function frameLoop(now) {
+  const dt = Math.min(100, now - lastTime);
+  lastTime = now;
+
+  flashTimer += dt;
+  if (flashTimer >= 20) {
+    const ticks = Math.floor(flashTimer / 20);
+    flashCounter = (flashCounter + ticks) & 0xFF;
+    flashTimer -= ticks * 20;
+  }
+
+  // Handle continuous Rewind when Backspace / [ / Rewind button OR Left key in death pause is held
+  const rewinding = isRewindActive() && rewindHistory.length > 0 &&
+    ['PLAYING', 'DEATH_FREEZE', 'DYING', 'BOOT_DESCEND', 'GAME_OVER_GLISTEN'].includes(gameState);
+
+  document.getElementById('btnRewindHold').classList.toggle('rewinding', rewinding);
+
+  if (rewinding) {
+    rewindAccumulator += dt;
+    if (rewindAccumulator >= 48) {
+      rewindAccumulator %= 48;
+      stepRewindOneFrame();
+    }
+  } else {
+    // If left key is released, reset death rewind flag
+    if (!isLeftPressed()) {
+      deathRewindActive = false;
+    }
+    if (!paused) {
+      const scaledDt = dt * gameSpeed;
+      if (gameState === 'TITLE_TUNE') {
+        stepTitleTune(scaledDt);
+      } else if (gameState === 'TITLE_SCROLL') {
+        stepTitleScroll(scaledDt);
+      } else if (gameState === 'PLAYING') {
+        // Authentic Manic Miner main loop runs at ~72ms per pass (~13.9 FPS)
+        mainLoopAccumulator += scaledDt;
+        const tickDuration = 72;
+        if (mainLoopAccumulator >= tickDuration) {
+          mainLoopAccumulator %= tickDuration;
+          stepMainLoopPass();
+        }
+      } else if (gameState === 'DEATH_FREEZE') {
+        // Allow holding Left key in death pause to rewind (150ms debounce after freeze allows player to notice hit)
+        if (isLeftPressed() && (deathRewindActive || (now - deathFreezeEnterTime > 150))) {
+          deathRewindActive = true;
+        }
+        // Allow Enter to accept fate and proceed with losing a life
+        if (isEnterPressed()) {
+          startDyingSequence();
+        }
+      } else if (gameState === 'DYING') {
+        stepDyingSequence(scaledDt);
+      } else if (gameState === 'BOOT_DESCEND') {
+        stepBootDescend(scaledDt);
+      } else if (gameState === 'GAME_OVER_GLISTEN') {
+        stepGameOverGlisten(scaledDt);
+      } else if (gameState === 'CAVERN_FLASH') {
+        stepCavernFlash(scaledDt);
+      } else if (gameState === 'CAVERN_AIR_BONUS') {
+        stepCavernAirBonus(scaledDt);
+      } else if (gameState === 'VICTORY_ANIM') {
+        stepVictoryAnim(scaledDt);
+      }
+    }
+  }
+
+  renderSpectrumScreen();
+  updateInspectorUI();
+  requestAnimationFrame(frameLoop);
+}
+
+// ============================================================================
+// SAVE STATES SUBSYSTEM (5 Slots with LocalStorage + Export/Import)
+// ============================================================================
+const SAVE_STORAGE_KEY = 'manic_miner_save_states_v1';
+let activeSaveSlot = 1;
+
+function showScreenToast(message, isWarning = false) {
+  const toast = document.getElementById('screenToast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.style.borderColor = isWarning ? 'var(--accent-red)' : 'var(--accent-cyan)';
+  toast.classList.add('show');
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2200);
+}
+
+function uint8ToBase64(u8) {
+  let binary = '';
+  const len = u8.byteLength;
+  const chunkSize = 8192;
+  for (let i = 0; i < len; i += chunkSize) {
+    const chunk = u8.subarray(i, Math.min(i + chunkSize, len));
+    binary += String.fromCharCode.apply(null, chunk);
+  }
+  return btoa(binary);
+}
+
+function base64ToUint8(b64) {
+  const binary = atob(b64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function captureScreenThumbnail() {
+  const offCanvas = document.createElement('canvas');
+  offCanvas.width = 68;
+  offCanvas.height = 51;
+  const offCtx = offCanvas.getContext('2d');
+  offCtx.imageSmoothingEnabled = false;
+  offCtx.drawImage(canvas, 0, 0, 68, 51);
+  return offCanvas.toDataURL('image/jpeg', 0.75);
+}
+
+function getSaveStore() {
+  try {
+    const raw = localStorage.getItem(SAVE_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {
+    console.error('Failed to read save states from localStorage', e);
+  }
+  return { activeSlot: 1, slots: {} };
+}
+
+function writeSaveStore(store) {
+  try {
+    localStorage.setItem(SAVE_STORAGE_KEY, JSON.stringify(store));
+  } catch (e) {
+    console.error('Failed to write save states to localStorage', e);
+    showScreenToast('⚠️ Storage full or error saving state!', true);
+  }
+}
+
+function getScoreString() {
+  // Score buffer at 33833..33838 (6 ASCII digits)
+  let s = '';
+  for (let i = 0; i < 6; i++) {
+    const ch = mem[33833 + i];
+    s += (ch >= 48 && ch <= 57) ? String.fromCharCode(ch) : '0';
+  }
+  return s;
+}
+
+function saveState(slot = activeSaveSlot) {
+  ensureAudio();
+  const store = getSaveStore();
+  const cavernId = mem[33799];
+  const cavernName = CAVERNS_META[cavernId]?.name || `Cavern ${cavernId}`;
+  const score = getScoreString();
+  const lives = mem[33879];
+  const air = mem[32956];
+  const now = new Date();
+  const dateStr = now.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' +
+                  now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  // Authentic ZX RAM: 16384..65535 (49152 bytes)
+  const ramSlice = mem.subarray(16384, 65536);
+  const ramBase64 = uint8ToBase64(ramSlice);
+  const thumb = captureScreenThumbnail();
+
+  store.activeSlot = slot;
+  store.slots[slot] = {
+    slot,
+    ram: ramBase64,
+    borderColor: borderColor & 7,
+    gameState: (gameState === 'DYING' || gameState === 'DEATH_FREEZE') ? 'PLAYING' : gameState,
+    flashCounter,
+    cavernId,
+    cavernName,
+    score,
+    lives,
+    air,
+    trainerInfLives,
+    trainerInfAir,
+    trainerInvincible,
+    timestamp: now.getTime(),
+    dateStr,
+    thumb
+  };
+
+  writeSaveStore(store);
+  activeSaveSlot = slot;
+  renderSaveStatesUI();
+
+  // Play save confirmation chime (two crisp rising pulses)
+  playBeeperPulse(13 * 35 + 25, 12, 0.16);
+  setTimeout(() => playBeeperPulse(13 * 22 + 25, 16, 0.16), 50);
+
+  showScreenToast(`💾 Saved to Slot ${slot} (${cavernName})`);
+}
+
+function loadState(slot = activeSaveSlot) {
+  ensureAudio();
+  const store = getSaveStore();
+  const stateData = store.slots[slot];
+  if (!stateData) {
+    showScreenToast(`⚠️ Slot ${slot} is empty!`, true);
+    playBeeperPulse(13 * 95 + 35, 20, 0.16);
+    return false;
+  }
+
+  try {
+    const ramBytes = base64ToUint8(stateData.ram);
+    mem.set(ramBytes, 16384);
+  } catch (e) {
+    console.error('Failed to restore RAM', e);
+    showScreenToast(`⚠️ Corrupted save data in Slot ${slot}!`, true);
+    return false;
+  }
+
+  borderColor = (stateData.borderColor !== undefined) ? stateData.borderColor : (mem[32883] & 7);
+  if (stateData.flashCounter !== undefined) flashCounter = stateData.flashCounter;
+
+  // Resume in PLAYING state
+  gameState = 'PLAYING';
+  paused = false;
+  document.getElementById('btnPause').textContent = '⏸ Pause';
+  hideDeathBanner();
+  keysDown.clear();
+  deathRewindActive = false;
+
+  if (stateData.trainerInfLives !== undefined) trainerInfLives = stateData.trainerInfLives;
+  if (stateData.trainerInfAir !== undefined) trainerInfAir = stateData.trainerInfAir;
+  if (stateData.trainerInvincible !== undefined) trainerInvincible = stateData.trainerInvincible;
+
+  activeSaveSlot = slot;
+  store.activeSlot = slot;
+  writeSaveStore(store);
+
+  // Re-seed rewind history with current safe frame
+  rewindHistory.length = 0;
+  pushRewindFrame();
+
+  updateCavernButtons();
+  syncCheatButtonUI();
+  syncAudioButtonUI();
+  renderSaveStatesUI();
+
+  // Play welcoming load chime (descending/rising harmonic)
+  playBeeperPulse(13 * 20 + 25, 14, 0.16);
+  setTimeout(() => playBeeperPulse(13 * 16 + 25, 18, 0.16), 45);
+
+  showScreenToast(`📂 Loaded Slot ${slot}: ${stateData.cavernName || 'Cavern'}`);
+  return true;
+}
+
+function deleteState(slot) {
+  const store = getSaveStore();
+  if (store.slots[slot]) {
+    delete store.slots[slot];
+    writeSaveStore(store);
+    renderSaveStatesUI();
+    showScreenToast(`🗑️ Slot ${slot} deleted`);
+  }
+}
+
+function exportSaveStates() {
+  const store = getSaveStore();
+  const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(store, null, 2));
+  const dlAnchor = document.createElement('a');
+  dlAnchor.setAttribute('href', dataStr);
+  dlAnchor.setAttribute('download', 'manic_miner_save_states.json');
+  document.body.appendChild(dlAnchor);
+  dlAnchor.click();
+  dlAnchor.remove();
+  showScreenToast('⬇️ Exported save states file');
+}
+
+function importSaveStates(jsonText) {
+  try {
+    const imported = JSON.parse(jsonText);
+    if (imported && imported.slots) {
+      writeSaveStore(imported);
+      if (imported.activeSlot) activeSaveSlot = imported.activeSlot;
+      renderSaveStatesUI();
+      showScreenToast('⬆️ Save states imported successfully!');
+    } else {
+      throw new Error('Invalid format');
+    }
+  } catch (e) {
+    console.error('Failed to import save states', e);
+    showScreenToast('⚠️ Invalid save states file!', true);
+  }
+}
+
+function renderSaveStatesUI() {
+  const store = getSaveStore();
+  if (store.activeSlot) activeSaveSlot = store.activeSlot;
+
+  const badge = document.getElementById('lblActiveSlotBadge');
+  if (badge) badge.textContent = `Slot ${activeSaveSlot}`;
+
+  const container = document.getElementById('saveStatesList');
+  if (!container) return;
+
+  container.innerHTML = '';
+  for (let s = 1; s <= 5; s++) {
+    const data = store.slots[s];
+    const isAct = (s === activeSaveSlot);
+
+    const slotEl = document.createElement('div');
+    slotEl.className = `save-slot-item ${isAct ? 'active-slot' : ''}`;
+    slotEl.title = `Slot ${s} (Click to set as Quick Slot)`;
+
+    if (data) {
+      slotEl.innerHTML = `
+        <img class="save-slot-thumb" src="${data.thumb}" alt="Slot ${s} Thumbnail" />
+        <div class="save-slot-info">
+          <div class="save-slot-title-row">
+            <span>Slot ${s}${isAct ? ' <span style="color:var(--accent);font-size:0.7rem;">(Active)</span>' : ''}</span>
+            <span style="font-size:0.68rem;color:var(--muted);">${data.dateStr}</span>
+          </div>
+          <div class="save-slot-cavern">${data.cavernName || 'Cavern ' + data.cavernId}</div>
+          <div class="save-slot-stats">SCORE: ${data.score} | LIVES: ${data.lives}</div>
+        </div>
+        <div class="save-slot-actions">
+          <button class="save-slot-btn primary" data-act="load" data-slot="${s}" title="Load Slot ${s} (F9)">📂</button>
+          <button class="save-slot-btn" data-act="save" data-slot="${s}" title="Overwrite Slot ${s} (F5)">💾</button>
+          <button class="save-slot-btn" data-act="del" data-slot="${s}" title="Delete Slot ${s}" style="color:var(--accent-red);">🗑️</button>
+        </div>
+      `;
+    } else {
+      slotEl.innerHTML = `
+        <div class="save-slot-thumb empty">EMPTY</div>
+        <div class="save-slot-info">
+          <div class="save-slot-title-row">
+            <span>Slot ${s}${isAct ? ' <span style="color:var(--accent);font-size:0.7rem;">(Active)</span>' : ''}</span>
+          </div>
+          <div class="save-slot-cavern" style="color:var(--muted);font-style:italic;">No saved state</div>
+          <div class="save-slot-stats" style="color:var(--muted);">Press F5 to save here</div>
+        </div>
+        <div class="save-slot-actions">
+          <button class="save-slot-btn" data-act="save" data-slot="${s}" title="Save to Slot ${s}">💾 Save</button>
+        </div>
+      `;
+    }
+
+    slotEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (btn) {
+        e.stopPropagation();
+        const act = btn.getAttribute('data-act');
+        const slotNum = parseInt(btn.getAttribute('data-slot'), 10);
+        if (act === 'load') loadState(slotNum);
+        else if (act === 'save') saveState(slotNum);
+        else if (act === 'del') deleteState(slotNum);
+        return;
+      }
+      activeSaveSlot = s;
+      store.activeSlot = s;
+      writeSaveStore(store);
+      renderSaveStatesUI();
+    });
+
+    container.appendChild(slotEl);
+  }
+}
+
+function toggleFullscreen() {
+  const wrap = document.getElementById('canvasWrap');
+  if (!document.fullscreenElement) {
+    wrap.requestFullscreen().catch(() => {});
+  } else {
+    document.exitFullscreen().catch(() => {});
+  }
+}
+
+document.addEventListener('fullscreenchange', () => {
+  const isFs = !!document.fullscreenElement;
+  const btn = document.getElementById('btnFullscreen');
+  if (btn) {
+    btn.innerHTML = isFs ? '🗗 Exit Fullscreen' : '⛶ Fullscreen';
+    btn.classList.toggle('active-toggle', isFs);
+  }
+  showScreenToast(isFs ? '⛶ Fullscreen 4:3 Enabled' : '🗗 Windowed Mode');
+});
+
+// ============================================================================
+// EVENT LISTENERS
+// ============================================================================
+window.addEventListener('keydown', (e) => {
+  if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Backspace'].includes(e.code)) {
+    e.preventDefault();
+  }
+  ensureAudio();
+
+  // Quick Save (F5) / Quick Load (F9) Hotkeys
+  if (e.code === 'F5') {
+    e.preventDefault();
+    saveState(activeSaveSlot);
+    return;
+  }
+  if (e.code === 'F9') {
+    e.preventDefault();
+    loadState(activeSaveSlot);
+    return;
+  }
+
+  // Instant -2s rewind on Delete or ]
+  if (e.code === 'Delete' || e.code === 'BracketRight') {
+    e.preventDefault();
+    jumpRewindFrames(28);
+    return;
+  }
+
+  // If in death pause and player presses any left movement key, activate death rewind immediately!
+  if (gameState === 'DEATH_FREEZE' && LEFT_KEYS.has(e.code)) {
+    deathRewindActive = true;
+  }
+
+  // Original A-G pause / any other key unpause behavior during gameplay
+  if (gameState === 'PLAYING' && mem[33882] === 0 && !isRewindActive()) {
+    if (PAUSE_KEYS.has(e.code)) {
+      paused = !paused;
+      document.getElementById('btnPause').textContent = paused ? '▶ Resume' : '⏸ Pause';
+      return;
+    } else if (paused && e.code !== 'Backspace' && e.code !== 'BracketLeft' && !LEFT_KEYS.has(e.code)) {
+      paused = false;
+      document.getElementById('btnPause').textContent = '⏸ Pause';
+    }
+  }
+
+  keysDown.add(e.code);
+});
+
+window.addEventListener('keyup', (e) => {
+  keysDown.delete(e.code);
+});
+
+window.addEventListener('blur', () => {
+  keysDown.clear();
+  rewindHoldButton = false;
+  deathRewindActive = false;
+});
+
+// Touch / Mouse Hold Helper
+function bindHoldButton(id, prop) {
+  const el = document.getElementById(id);
+  const start = (e) => {
+    e.preventDefault();
+    ensureAudio();
+    touchState[prop] = true;
+    if (gameState === 'DEATH_FREEZE' && prop === 'left') {
+      deathRewindActive = true;
+    }
+  };
+  const end = (e) => { e.preventDefault(); touchState[prop] = false; };
+  el.addEventListener('mousedown', start);
+  el.addEventListener('mouseup', end);
+  el.addEventListener('mouseleave', end);
+  el.addEventListener('touchstart', start, { passive: false });
+  el.addEventListener('touchend', end, { passive: false });
+}
+bindHoldButton('touchLeft', 'left');
+bindHoldButton('touchRight', 'right');
+bindHoldButton('touchJump', 'jump');
+bindHoldButton('touchEnter', 'enter');
+bindHoldButton('touchRewind', 'rewind');
+
+// Hold-to-Rewind primary button
+const btnRewHold = document.getElementById('btnRewindHold');
+const startRewHold = (e) => {
+  e.preventDefault();
+  ensureAudio();
+  rewindHoldButton = true;
+};
+const endRewHold = (e) => {
+  e.preventDefault();
+  rewindHoldButton = false;
+};
+btnRewHold.addEventListener('mousedown', startRewHold);
+btnRewHold.addEventListener('mouseup', endRewHold);
+btnRewHold.addEventListener('mouseleave', endRewHold);
+btnRewHold.addEventListener('touchstart', startRewHold, { passive: false });
+btnRewHold.addEventListener('touchend', endRewHold, { passive: false });
+
+document.getElementById('btnRewind2s').addEventListener('click', () => {
+  ensureAudio();
+  jumpRewindFrames(28);
+});
+
+document.getElementById('rewindSlider').addEventListener('input', (e) => {
+  const idx = parseInt(e.target.value, 10);
+  if (idx >= 0 && idx < rewindHistory.length) {
+    const snap = rewindHistory[idx];
+    rewindHistory.length = idx + 1;
+    restoreRewindFrame(snap);
+    const secs = (rewindHistory.length * 0.072).toFixed(1);
+    document.getElementById('lblRewindTime').textContent = `${secs}s`;
+  }
+});
+
+document.getElementById('btnAutoCatch').addEventListener('click', (e) => {
+  autoCatchDeath = !autoCatchDeath;
+  e.currentTarget.textContent = `🛟 Death-Save: ${autoCatchDeath ? 'ON' : 'OFF'}`;
+  e.currentTarget.classList.toggle('active-toggle', autoCatchDeath);
+  if (!autoCatchDeath && gameState === 'DEATH_FREEZE') {
+    startDyingSequence();
+  }
+});
+
+document.getElementById('btnStart').addEventListener('click', () => {
+  ensureAudio();
+  paused = false;
+  hideDeathBanner();
+  rewindHistory.length = 0;
+  syncRewindSliderUI();
+  document.getElementById('btnPause').textContent = '⏸ Pause';
+  mem[33882] = 0;
+  mem[33799] = 0;
+  mem[33879] = 2;
+  routine_34436_startGame();
+});
+
+document.getElementById('btnTitle').addEventListener('click', () => {
+  ensureAudio();
+  paused = false;
+  hideDeathBanner();
+  document.getElementById('btnPause').textContent = '⏸ Pause';
+  routine_34252_initTitleScreen();
+});
+
+document.getElementById('btnPause').addEventListener('click', () => {
+  paused = !paused;
+  document.getElementById('btnPause').textContent = paused ? '▶ Resume' : '⏸ Pause';
+});
+
+document.getElementById('btnQuickSave').addEventListener('click', () => {
+  saveState(activeSaveSlot);
+});
+
+document.getElementById('btnQuickLoad').addEventListener('click', () => {
+  loadState(activeSaveSlot);
+});
+
+document.getElementById('btnExportStates').addEventListener('click', exportSaveStates);
+
+document.getElementById('fileImportStates').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => importSaveStates(reader.result);
+  reader.readAsText(file);
+});
+
+document.getElementById('btnMusic').addEventListener('click', () => {
+  ensureAudio();
+  if (audioEnabled && (mem[33884] & 2) === 0) {
+    audioEnabled = false;
+    mem[33884] |= 2;
+    stopActiveSound();
+  } else {
+    audioEnabled = true;
+    mem[33884] &= ~2;
+  }
+  syncAudioButtonUI();
+});
+
+document.getElementById('btnCRT').addEventListener('click', (e) => {
+  const wrap = document.getElementById('canvasWrap');
+  wrap.classList.toggle('crt-enabled');
+  e.currentTarget.classList.toggle('active-toggle', wrap.classList.contains('crt-enabled'));
+});
+
+document.getElementById('btnFullscreen').addEventListener('click', toggleFullscreen);
+document.getElementById('btnExitFs').addEventListener('click', toggleFullscreen);
+canvas.addEventListener('dblclick', toggleFullscreen);
+
+document.getElementById('selSpeed').addEventListener('change', (e) => {
+  gameSpeed = parseFloat(e.target.value) || 1.0;
+});
+
+document.getElementById('btnCheat6031769').addEventListener('click', () => {
+  if (mem[33885] === 7) {
+    mem[33885] = 0;
+    // Clear the 16x16 boot sprite slot in the bottom third of the display file
+    let h = 20640 >> 8;
+    let l = (20640 & 0xFF) + Math.min(8, mem[33879]) * 2;
+    for (let b = 0; b < 16; b++) {
+      mem[(h << 8) | l] = 0;
+      mem[(h << 8) | ((l + 1) & 0xFF)] = 0;
+      h++;
+      if ((h & 7) === 0) { h -= 8; l = (l + 32) & 0xFF; }
+    }
+  } else {
+    mem[33885] = 7;
+  }
+  syncCheatButtonUI();
+});
+
+document.getElementById('btnInfLives').addEventListener('click', (e) => {
+  trainerInfLives = !trainerInfLives;
+  e.currentTarget.textContent = `❤️ Infinite Lives: ${trainerInfLives ? 'ON' : 'OFF'}`;
+  e.currentTarget.classList.toggle('active-toggle', trainerInfLives);
+});
+
+document.getElementById('btnInfAir').addEventListener('click', (e) => {
+  trainerInfAir = !trainerInfAir;
+  e.currentTarget.textContent = `🫧 Infinite Air: ${trainerInfAir ? 'ON' : 'OFF'}`;
+  e.currentTarget.classList.toggle('active-toggle', trainerInfAir);
+});
+
+document.getElementById('btnInvincible').addEventListener('click', (e) => {
+  trainerInvincible = !trainerInvincible;
+  e.currentTarget.textContent = `🛡️ Invincible: ${trainerInvincible ? 'ON' : 'OFF'}`;
+  e.currentTarget.classList.toggle('active-toggle', trainerInvincible);
+});
+
+document.getElementById('btnCollectItems').addEventListener('click', () => {
+  if (gameState !== 'PLAYING') return;
+  for (let iy = 32885; mem[iy] !== 255; iy += 5) {
+    if (mem[iy] !== 0) {
+      mem[iy] = 0;
+      routine_37118_addToScore(33836);
+    }
+  }
+  mem[32884] = 0;
+  mem[32911] |= 128; // Flash portal
+});
+
+document.getElementById('btnNextCavern').addEventListener('click', () => {
+  if (gameState !== 'PLAYING') return;
+  mem[33882] = 0;
+  routine_36904_triggerNextCavern();
+});
+
+document.getElementById('fileZ80').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const arr = new Uint8Array(reader.result);
+    loadZ80Snapshot(arr);
+    rewindHistory.length = 0;
+    syncRewindSliderUI();
+    hideDeathBanner();
+    routine_34252_initTitleScreen();
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+// ============================================================================
+// BOOTSTRAP
+// ============================================================================
+buildCavernGrid();
+loadZ80Snapshot(base64ToBytes(Z80_BASE64));
+renderSaveStatesUI();
+routine_34252_initTitleScreen();
+requestAnimationFrame(frameLoop);
+</script>
+</body>
+</html>
