@@ -116,3 +116,6 @@ Runs directly in any modern desktop or mobile browser — no plugins, build step
 
 ### Non-Commercial Educational / Fan Preservation Notice
 This project is an open, non-commercial educational tribute and preservation project celebrating the history of 8-bit British computing. All original trademarks, character names, audio themes, and artwork remain the intellectual property of their respective copyright holders.
+
+> **Notice to Rights Holders:**  
+> I will take this down immediately if any copyright has been infringed — just ask and I will remove this little project, which is a strictly non-profit tribute to Matthew Smith (MS).
